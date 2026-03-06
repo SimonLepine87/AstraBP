@@ -1,0 +1,1089 @@
+﻿<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Astra BP - Simulateur Deal</title>
+  <style>
+    :root {
+      --bgA: #f3f7ff;
+      --bgB: #f8f3ea;
+      --inkMain: #1f2638;
+      --inkMuted: #5f677f;
+      --accentA: #0b7d5d;
+      --accentB: #165fbc;
+      --lineSoft: #d9e1ef;
+      --cardBg: #ffffff;
+      --alert: #b54708;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      color: var(--inkMain);
+      background: linear-gradient(145deg, var(--bgA), var(--bgB));
+      min-height: 100vh;
+    }
+
+    .layoutRoot {
+      width: 100%;
+      max-width: 100%;
+      margin: 0;
+      padding: 16px;
+      display: grid;
+      grid-template-columns: minmax(290px, 340px) minmax(0, 1fr);
+      gap: 14px;
+    }
+
+    .cardPanel {
+      background: var(--cardBg);
+      border: 1px solid var(--lineSoft);
+      border-radius: 14px;
+      box-shadow: 0 9px 26px rgba(22, 34, 61, 0.08);
+    }
+
+    .leftPanel {
+      padding: 16px;
+      position: sticky;
+      top: 10px;
+      height: fit-content;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 1.3rem;
+      letter-spacing: 0.2px;
+    }
+
+    .hintText {
+      margin: 6px 0 14px;
+      font-size: 0.9rem;
+      color: var(--inkMuted);
+      line-height: 1.35;
+    }
+
+    .scenarioBlock {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .scenarioButton {
+      border: 1px solid var(--lineSoft);
+      background: #f7f9ff;
+      color: var(--inkMain);
+      border-radius: 9px;
+      padding: 9px 10px;
+      cursor: pointer;
+      text-align: left;
+      font-weight: 600;
+      transition: all 0.15s ease;
+      font-size: 0.9rem;
+    }
+
+    .scenarioButton.isActive {
+      border-color: #8fd6bf;
+      background: #e7fff6;
+      color: #0c5f44;
+    }
+
+    .fieldGrid {
+      display: grid;
+      gap: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 5px;
+      font-size: 0.82rem;
+      color: var(--inkMuted);
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--lineSoft);
+      border-radius: 8px;
+      padding: 8px 9px;
+      font-size: 0.93rem;
+      color: var(--inkMain);
+      background: #fff;
+    }
+
+    .mainPanel {
+      display: grid;
+      gap: 12px;
+    }
+
+    .kpiGrid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(150px, 1fr));
+      gap: 10px;
+    }
+
+    .kpiCard { padding: 12px; }
+    .kpiLabel {
+      margin: 0;
+      color: var(--inkMuted);
+      font-size: 0.76rem;
+      text-transform: uppercase;
+      letter-spacing: 0.35px;
+    }
+
+    .kpiValue {
+      margin: 6px 0 0;
+      font-size: 1.15rem;
+      font-weight: 700;
+    }
+
+    .chartGrid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .chartCard { padding: 11px; }
+
+    .chartCard h3 {
+      margin: 0;
+      font-size: 0.9rem;
+      color: var(--inkMuted);
+    }
+
+    .chartHeaderRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chartSelect {
+      border: 1px solid var(--lineSoft);
+      border-radius: 8px;
+      padding: 6px 8px;
+      font-size: 0.82rem;
+      color: var(--inkMain);
+      background: #fff;
+      min-width: 210px;
+    }
+
+    .chartHost {
+      width: 100%;
+      height: clamp(340px, 45vh, 560px);
+      border: 1px dashed #d4ddeb;
+      border-radius: 9px;
+      background: #fcfdff;
+      overflow: hidden;
+    }
+
+    .tableCard {
+      padding: 11px;
+      overflow: auto;
+      max-height: 520px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.84rem;
+    }
+
+    th, td {
+      border-bottom: 1px solid #ecf1f9;
+      padding: 7px 6px;
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #f7f9ff;
+    }
+
+    th:first-child, td:first-child { text-align: left; }
+
+    .negTone { color: var(--alert); font-weight: 600; }
+
+    @media (max-width: 1100px) {
+      .layoutRoot { grid-template-columns: 1fr; }
+      .leftPanel { position: static; }
+      .kpiGrid { grid-template-columns: 1fr 1fr; }
+      .chartGrid { grid-template-columns: 1fr; }
+      .chartHost { height: clamp(280px, 40vh, 420px); }
+    }
+  </style>
+</head>
+<body>
+  <div class="layoutRoot">
+    <aside class="cardPanel leftPanel">
+      <h1>Astra BP Simulator</h1>
+      <p class="hintText">
+        Based on the deal board paper: 50M seed, 2/20 fee structure, and Dominice/Astra step-down economics.
+      </p>
+
+      <div class="scenarioBlock" id="scenarioBlock"></div>
+
+      <div class="fieldGrid">
+        <label>Initial AUM (CHF)
+          <input id="initialAumChf" type="number" min="0" step="100000" />
+        </label>
+        <label>Projection horizon (years)
+          <input id="projectionYears" type="number" min="1" max="15" step="1" />
+        </label>
+        <label>Annual performance (%)
+          <input id="performancePct" type="number" step="0.1" />
+        </label>
+        <label>Annual net fundraising (%) (used if no AUM target)
+          <input id="collectionPct" type="number" step="0.1" />
+        </label>
+        <label>Average management fee (%)
+          <input id="managementFeePct" type="number" step="0.1" />
+        </label>
+        <label>Average performance fee (%)
+          <input id="performanceFeePct" type="number" step="0.1" />
+        </label>
+        <label>Coûts fonctionnement (CHF/an)
+          <input id="operatingCostsChf" type="number" min="0" step="10000" />
+        </label>
+        <label>Seed capital Dominicé (CHF)
+          <input id="seedCapitalChf" type="number" min="0" step="100000" />
+        </label>
+        <div id="stochasticInputsSection" style="display:none;">
+          <label style="margin-top:6px; font-weight:700; color:#2f3850;">Stochastic scenario inputs</label>
+          <label>Stochastic drift (%)
+            <input id="stochasticDriftPct" type="number" step="0.1" />
+          </label>
+          <label>Stochastic volatility (%)
+            <input id="stochasticVolPct" type="number" step="0.1" min="0" />
+          </label>
+          <label>Stochastic random seed
+            <input id="stochasticSeed" type="number" step="1" />
+          </label>
+          <label>Fundraising base rate (%)
+            <input id="stochasticFlowBasePct" type="number" step="0.1" />
+          </label>
+          <label>Fundraising sensitivity to performance (beta)
+            <input id="stochasticFlowPerfBeta" type="number" step="0.05" />
+          </label>
+          <label>Fundraising sensitivity to AUM (%)
+            <input id="stochasticFlowAumBetaPct" type="number" step="0.1" />
+          </label>
+          <label>Fundraising AUM scale (CHF)
+            <input id="stochasticFlowScaleAumChf" type="number" step="1000000" min="1000000" />
+          </label>
+          <label>Fundraising volatility (%)
+            <input id="stochasticFlowVolPct" type="number" step="0.1" min="0" />
+          </label>
+          <label>Fundraising min clamp (%)
+            <input id="stochasticFlowMinPct" type="number" step="0.1" />
+          </label>
+          <label>Fundraising max clamp (%)
+            <input id="stochasticFlowMaxPct" type="number" step="0.1" />
+          </label>
+          <label>Return level to double AUM (%)
+            <input id="stochasticDoubleAumPerfPct" type="number" step="0.1" min="1" />
+          </label>
+          <label>Fundraising needed at that return (%)
+            <input id="stochasticDoubleAumFlowPct" type="number" step="0.1" />
+          </label>
+          <button id="generateScenarioButton" type="button" class="scenarioButton" style="margin-top:4px;">Generate new scenario</button>
+        </div>
+
+      </div>
+    </aside>
+
+    <main class="mainPanel">
+      <section class="kpiGrid">
+        <article class="cardPanel kpiCard">
+          <p class="kpiLabel">Final AUM</p>
+          <p class="kpiValue" id="kpiFinalAum"></p>
+        </article>
+        <article class="cardPanel kpiCard">
+          <p class="kpiLabel">Cumulative Dominice revenueé</p>
+          <p class="kpiValue" id="kpiCumDominiceRev"></p>
+        </article>
+        <article class="cardPanel kpiCard">
+          <p class="kpiLabel">Cumul résultat Dominicé</p>
+          <p class="kpiValue" id="kpiCumDominiceNet"></p>
+        </article>
+        <article class="cardPanel kpiCard">
+          <p class="kpiLabel">ROIC Dominicé final</p>
+          <p class="kpiValue" id="kpiFinalRoic"></p>
+        </article>
+      </section>
+
+      <section class="cardPanel tableCard" style="max-height:none;">
+        <h3 style="margin:0 0 8px; font-size:0.91rem; color: var(--inkMuted);">Current assumptions</h3>
+        <div id="assumptionsBox" style="font-size:0.83rem; color:#4d5771; line-height:1.45;"></div>
+      </section>
+
+      <section class="chartGrid">
+        <article class="cardPanel chartCard">
+          <h3>AUM evolution</h3>
+          <div class="chartHost" id="aumChart"></div>
+        </article>
+        <article class="cardPanel chartCard">
+          <div class="chartHeaderRow">
+            <h3 id="secondaryChartTitle">Annual net income (Dominice / Astra with memory)</h3>
+            <select id="secondaryChartMetricId" class="chartSelect">
+              <option value="netIncome" selected>Net Income</option>
+              <option value="revenue">Revenue</option>
+              <option value="cumulativeNetIncome">Cumulative Net Income</option>
+              <option value="seedPerf">Seed Performance</option>
+              <option value="cumulativeSeedPerf">Cumulative Seed Performance</option>
+              <option value="seedPlusDominiceNet">Seed Perf + Dominice Net</option>
+              <option value="cumulativeSeedPlusDominiceNet">Cumulative Seed Perf + Dominice Net</option>
+            </select>
+          </div>
+          <div class="chartHost" id="revenueChart"></div>
+        </article>
+      </section>
+
+      <section class="cardPanel tableCard">
+        <h3 style="margin:0 0 8px; font-size:0.91rem; color: var(--inkMuted);">Annual and cumulative statementé</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Step-down phase</th>
+              <th>Start AUM</th>
+              <th>End AUM</th>
+              <th>Total MF</th>
+              <th>Total PF</th>
+              <th>Dominice revenue</th>
+              <th>Astra revenue</th>
+              <th>Total costs</th>
+              <th>Dominice costs</th>
+              <th>Astra costs</th>
+              <th>Dominice support (Astra deficit)</th>
+              <th>Repayment to Dominice</th>
+              <th>Astra memory end of year</th>
+              <th>Dominice net income</th>
+              <th>Astra net income</th>
+              <th>Cumulative Dominice net</th>
+              <th>Cumulative Astra net</th>
+              <th>Seed perf</th>
+              <th>Cumulative seed perf</th>
+              <th>Seed perf + Dominice net</th>
+              <th>Cumulative seed perf + Dominice net</th>
+              <th>Dominice ROIC</th>
+            </tr>
+          </thead>
+          <tbody id="resultTableBody"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const scenarioList = [
+      {
+        scenarioId: "noPerfNoCollecte",
+        scenarioLabel: "No performance / no fundraising",
+        performancePct: 0,
+        collectionPct: 0,
+        targetAumMList: []
+      },
+      {
+        scenarioId: "perfMoyenne",
+        scenarioLabel: "Average performance (10%) + average fundraising",
+        performancePct: 10,
+        collectionPct: 8,
+        targetAumMList: [100, 200, 400, 600, 800]
+      },
+      {
+        scenarioId: "superPerf",
+        scenarioLabel: "Strong performance + strong fundraising",
+        performancePct: 20,
+        collectionPct: 14,
+        targetAumMList: [150, 300, 600, 900, 1300]
+      },
+      {
+        scenarioId: "stochasticCase",
+        scenarioLabel: "Stochastic scenario (drift/vol + stochastic fundraising)",
+        performancePct: 12,
+        collectionPct: 6,
+        targetAumMList: []
+      }
+    ];
+
+    const stateData = {
+      activeScenarioId: "perfMoyenne",
+      initialAumChf: 50000000,
+      projectionYears: 5,
+      performancePct: 10,
+      collectionPct: 8,
+      managementFeePct: 2,
+      performanceFeePct: 20,
+      operatingCostsChf: 1600000,
+      seedCapitalChf: 50000000,
+      stochasticDriftPct: 12,
+      stochasticVolPct: 10,
+      stochasticSeed: 42,
+      stochasticFlowBasePct: 4,
+      stochasticFlowPerfBeta: 0.45,
+      stochasticFlowAumBetaPct: 2.0,
+      stochasticFlowScaleAumChf: 200000000,
+      stochasticFlowVolPct: 5,
+      stochasticFlowMinPct: -40,
+      stochasticFlowMaxPct: 150,
+      stochasticDoubleAumPerfPct: 15,
+      stochasticDoubleAumFlowPct: 85,
+      secondaryChartMetricId: "netIncome"
+    };
+
+    const inputFieldIdList = [
+      "initialAumChf",
+      "projectionYears",
+      "performancePct",
+      "collectionPct",
+      "managementFeePct",
+      "performanceFeePct",
+      "operatingCostsChf",
+      "seedCapitalChf",
+      "stochasticDriftPct",
+      "stochasticVolPct",
+      "stochasticSeed",
+      "stochasticFlowBasePct",
+      "stochasticFlowPerfBeta",
+      "stochasticFlowAumBetaPct",
+      "stochasticFlowScaleAumChf",
+      "stochasticFlowVolPct",
+      "stochasticFlowMinPct",
+      "stochasticFlowMaxPct",
+      "stochasticDoubleAumPerfPct",
+      "stochasticDoubleAumFlowPct"
+    ];
+
+    const formatCurrency = (valueNumber) => new Intl.NumberFormat("fr-CH", {
+      style: "currency",
+      currency: "CHF",
+      maximumFractionDigits: 0
+    }).format(valueNumber);
+
+    const formatPercent = (valueNumber) => `${valueNumber.toFixed(1)}%`;
+
+    const formatCompact = (valueNumber) => new Intl.NumberFormat("fr-CH", {
+      notation: "compact",
+      compactDisplay: "short",
+      maximumFractionDigits: 1
+    }).format(valueNumber);
+
+    const parseNumberValue = (valueString, fallbackValue) => {
+      const parsedValue = Number(valueString);
+      return Number.isFinite(parsedValue) ? parsedValue : fallbackValue;
+    };
+
+    const clampValue = (valueNumber, minValue, maxValue) => Math.min(Math.max(valueNumber, minValue), maxValue);
+
+    const createSeededRandom = (seedValue) => {
+      let seedInt = (Math.floor(seedValue) >>> 0);
+      return () => {
+        seedInt += 0x6D2B79F5;
+        let tempValue = seedInt;
+        tempValue = Math.imul(tempValue ^ (tempValue >>> 15), tempValue | 1);
+        tempValue ^= tempValue + Math.imul(tempValue ^ (tempValue >>> 7), tempValue | 61);
+        return ((tempValue ^ (tempValue >>> 14)) >>> 0) / 4294967296;
+      };
+    };
+
+    const sampleNormalValue = (meanValue, stdValue, randomFn) => {
+      const u1 = Math.max(randomFn(), 1e-12);
+      const u2 = randomFn();
+      const zValue = Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+      return meanValue + stdValue * zValue;
+    };
+
+    const getCurrentScenario = () => scenarioList.find(
+      (scenarioItem) => scenarioItem.scenarioId === stateData.activeScenarioId
+    ) || scenarioList[0];
+
+    const getStepDownByAum = (aumEndChf) => {
+      const aumEndMillion = aumEndChf / 1000000;
+      if (aumEndMillion <= 300) {
+        return {
+          phaseLabel: "Phase 1 (<=300m)",
+          dominiceMfShare: 1.0,
+          dominicePfShare: 0.4
+        };
+      }
+      if (aumEndMillion <= 600) {
+        return {
+          phaseLabel: "Phase 2 (300-600m)",
+          dominiceMfShare: 0.8,
+          dominicePfShare: 0.3
+        };
+      }
+      return {
+        phaseLabel: "Phase 3 (>600m)",
+        dominiceMfShare: 0.7,
+        dominicePfShare: 0.25
+      };
+    };
+
+    const computeProjectionRows = () => {
+      const currentScenario = getCurrentScenario();
+      const isStochasticScenario = currentScenario.scenarioId === "stochasticCase";
+      const rowList = [];
+      let aumStart = stateData.initialAumChf;
+      let cumulativeDominiceRevenue = 0;
+      let cumulativeDominiceNet = 0;
+      let cumulativeAstraNet = 0;
+      let astraLossMemoryChf = 0;
+      let seedValueStartChf = stateData.seedCapitalChf;
+      let cumulativeSeedPerfChf = 0;
+      let cumulativeSeedPlusDominiceNetChf = 0;
+
+      const perfRateBase = stateData.performancePct / 100;
+      const collectionRateBase = stateData.collectionPct / 100;
+      const mfRate = stateData.managementFeePct / 100;
+      const pfRate = stateData.performanceFeePct / 100;
+
+      const stochasticDriftRate = stateData.stochasticDriftPct / 100;
+      const stochasticVolRate = stateData.stochasticVolPct / 100;
+      const stochasticFlowBaseRate = stateData.stochasticFlowBasePct / 100;
+      const stochasticFlowAumBetaRate = stateData.stochasticFlowAumBetaPct / 100;
+      const stochasticFlowVolRate = stateData.stochasticFlowVolPct / 100;
+      const stochasticFlowMinRate = stateData.stochasticFlowMinPct / 100;
+      const stochasticFlowMaxRate = stateData.stochasticFlowMaxPct / 100;
+      const stochasticScaleAumChf = Math.max(stateData.stochasticFlowScaleAumChf, 1000000);
+      const stochasticDoubleAumPerfRate = Math.max(stateData.stochasticDoubleAumPerfPct / 100, 0.01);
+      const stochasticDoubleAumFlowRate = stateData.stochasticDoubleAumFlowPct / 100;
+
+      const randomFn = createSeededRandom(stateData.stochasticSeed);
+
+      for (let yearIndex = 1; yearIndex <= stateData.projectionYears; yearIndex += 1) {
+        let appliedPerfRate = perfRateBase;
+        let appliedCollectionRate = collectionRateBase;
+
+        if (isStochasticScenario) {
+          appliedPerfRate = sampleNormalValue(stochasticDriftRate, stochasticVolRate, randomFn);
+          appliedPerfRate = clampValue(appliedPerfRate, -0.8, 0.8);
+
+          const fundraisingShock = sampleNormalValue(0, stochasticFlowVolRate, randomFn);
+          const aumSignal = Math.log1p(Math.max(aumStart, 0) / stochasticScaleAumChf);
+
+          // Anchor: around 15% return implies roughly doubling AUM through fundraising.
+          const perfDoublingSignal = (appliedPerfRate / stochasticDoubleAumPerfRate) * stochasticDoubleAumFlowRate;
+          const perfBetaSignal = stateData.stochasticFlowPerfBeta * appliedPerfRate;
+
+          appliedCollectionRate = stochasticFlowBaseRate + perfDoublingSignal + perfBetaSignal + (stochasticFlowAumBetaRate * aumSignal) + fundraisingShock;
+          appliedCollectionRate = clampValue(appliedCollectionRate, stochasticFlowMinRate, stochasticFlowMaxRate);
+        }
+
+        const perfGain = aumStart * appliedPerfRate;
+        let collectionGain = aumStart * appliedCollectionRate;
+
+        if (!isStochasticScenario) {
+          const targetAumM = currentScenario.targetAumMList[yearIndex - 1];
+          if (Number.isFinite(targetAumM) && targetAumM > 0) {
+            const targetAumChf = targetAumM * 1000000;
+            collectionGain = targetAumChf - aumStart - perfGain;
+            appliedCollectionRate = aumStart > 0 ? collectionGain / aumStart : 0;
+          }
+        }
+
+        const aumEnd = Math.max(aumStart + perfGain + collectionGain, 0);
+        const stepDownObj = getStepDownByAum(aumEnd);
+
+        const totalManagementFees = aumEnd * mfRate;
+        const totalPerformanceFees = Math.max(aumEnd * appliedPerfRate, 0) * pfRate;
+
+        const dominiceRevenue =
+          (totalManagementFees * stepDownObj.dominiceMfShare) +
+          (totalPerformanceFees * stepDownObj.dominicePfShare);
+        const astraRevenue = (totalManagementFees + totalPerformanceFees) - dominiceRevenue;
+
+        const dominiceCostShare = stateData.operatingCostsChf * 0.5;
+        const astraCostShare = stateData.operatingCostsChf * 0.5;
+
+        const astraPreMemoryNet = astraRevenue - astraCostShare;
+        let dominiceSupportChf = 0;
+        let astraRepaymentChf = 0;
+        let astraNet = 0;
+
+        if (astraPreMemoryNet < 0) {
+          dominiceSupportChf = -astraPreMemoryNet;
+          astraLossMemoryChf += dominiceSupportChf;
+          astraNet = 0;
+        } else {
+          astraRepaymentChf = Math.min(astraPreMemoryNet, astraLossMemoryChf);
+          astraLossMemoryChf -= astraRepaymentChf;
+          astraNet = astraPreMemoryNet - astraRepaymentChf;
+        }
+
+        const dominiceNet = (dominiceRevenue - dominiceCostShare) - dominiceSupportChf + astraRepaymentChf;
+
+        const seedPerfChf = seedValueStartChf * appliedPerfRate;
+        const seedValueEndChf = seedValueStartChf + seedPerfChf;
+        cumulativeSeedPerfChf += seedPerfChf;
+
+        const seedPlusDominiceNetChf = seedPerfChf + dominiceNet;
+        cumulativeSeedPlusDominiceNetChf += seedPlusDominiceNetChf;
+
+        cumulativeDominiceRevenue += dominiceRevenue;
+        cumulativeDominiceNet += dominiceNet;
+        cumulativeAstraNet += astraNet;
+
+        const roicValue = stateData.seedCapitalChf > 0
+          ? (cumulativeDominiceNet / stateData.seedCapitalChf) * 100
+          : 0;
+
+        rowList.push({
+          yearLabel: `Y${yearIndex}`,
+          phaseLabel: stepDownObj.phaseLabel,
+          aumStart,
+          aumEnd,
+          appliedPerfRate,
+          appliedCollectionRate,
+          totalManagementFees,
+          totalPerformanceFees,
+          dominiceRevenue,
+          astraRevenue,
+          operatingCosts: stateData.operatingCostsChf,
+          dominiceCostShare,
+          astraCostShare,
+          dominiceSupportChf,
+          astraRepaymentChf,
+          astraLossMemoryChf,
+          dominiceNet,
+          astraNet,
+          cumulativeDominiceRevenue,
+          cumulativeDominiceNet,
+          cumulativeAstraNet,
+          seedPerfChf,
+          cumulativeSeedPerfChf,
+          seedPlusDominiceNetChf,
+          cumulativeSeedPlusDominiceNetChf,
+          roicValue
+        });
+
+        aumStart = aumEnd;
+        seedValueStartChf = seedValueEndChf;
+      }
+
+      return rowList;
+    };
+
+    const buildSvg = ({ widthValue, heightValue, contentHtml }) =>
+      `<svg viewBox="0 0 ${widthValue} ${heightValue}" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">${contentHtml}</svg>`;
+
+    const getChartSize = (hostNode, minWidthValue = 800, minHeightValue = 320) => ({
+      widthValue: Math.max(Math.floor(hostNode.clientWidth || 0), minWidthValue),
+      heightValue: Math.max(Math.floor(hostNode.clientHeight || 0), minHeightValue)
+    });
+
+    const renderAumChart = (rowList) => {
+      const hostNode = document.getElementById("aumChart");
+      const { widthValue, heightValue } = getChartSize(hostNode);
+
+      const plotLeftX = 40;
+      const plotRightX = widthValue - 54;
+      const plotTopY = 24;
+      const plotBottomY = heightValue - 22;
+      const plotHeight = Math.max(plotBottomY - plotTopY, 120);
+
+      const aumSeriesList = [stateData.initialAumChf, ...rowList.map((rowItem) => rowItem.aumEnd)];
+      const maxAum = Math.max(...aumSeriesList, 1);
+
+      const perfIndexList = [100];
+      rowList.forEach((rowItem) => {
+        const prevIndexValue = perfIndexList[perfIndexList.length - 1];
+        const growthRate = rowItem.appliedPerfRate ?? (stateData.performancePct / 100);
+        perfIndexList.push(prevIndexValue * (1 + growthRate));
+      });
+
+      const maxPerfIndex = Math.max(...perfIndexList, 100);
+      const minPerfIndex = Math.min(...perfIndexList, 100);
+      const perfIndexRange = Math.max(maxPerfIndex - minPerfIndex, 1);
+
+      const pointCount = Math.max(rowList.length + 1, 2);
+      const xStep = (plotRightX - plotLeftX) / (pointCount - 1);
+
+      const yFromAum = (aumValue) => plotBottomY - (aumValue / maxAum) * plotHeight;
+      const yFromPerfIndex = (indexValue) => plotTopY + ((maxPerfIndex - indexValue) / perfIndexRange) * plotHeight;
+
+      const aumPointList = aumSeriesList.map((aumValue, indexValue) => {
+        const xPos = plotLeftX + indexValue * xStep;
+        return `${xPos},${yFromAum(aumValue)}`;
+      }).join(" ");
+
+      const perfPointList = perfIndexList.map((indexValue, pointIndex) => {
+        const xPos = plotLeftX + pointIndex * xStep;
+        return `${xPos},${yFromPerfIndex(indexValue)}`;
+      }).join(" ");
+
+      const yearLabelList = ["Y0", ...rowList.map((rowItem) => rowItem.yearLabel)];
+      const yearLabelHtml = yearLabelList.map((labelText, indexValue) => {
+        const xPos = plotLeftX + indexValue * xStep;
+        return `<text x="${xPos}" y="${heightValue - 6}" font-size="10" fill="#687288" text-anchor="middle">${labelText}</text>`;
+      }).join("");
+
+      const rightAxisTopLabel = maxPerfIndex.toFixed(1);
+      const rightAxisBottomLabel = minPerfIndex.toFixed(1);
+      const perfBaseY = yFromPerfIndex(100);
+
+      const maxAumMchf = maxAum / 1000000;
+      const midAumMchf = maxAumMchf / 2;
+      const leftAxisLabelHtml = `
+        <text x="6" y="${plotTopY + 3}" font-size="10" fill="#165fbc">${maxAumMchf.toFixed(1)} M CHF</text>
+        <text x="6" y="${plotTopY + (plotHeight / 2) + 3}" font-size="10" fill="#165fbc">${midAumMchf.toFixed(1)} M CHF</text>
+        <text x="6" y="${plotBottomY}" font-size="10" fill="#165fbc">0.0 M CHF</text>
+      `;
+
+      hostNode.innerHTML = buildSvg({
+        widthValue,
+        heightValue,
+        contentHtml: `
+          <rect x="0" y="0" width="${widthValue}" height="${heightValue}" fill="#fcfdff"/>
+          <line x1="${plotLeftX - 4}" y1="${plotBottomY}" x2="${plotRightX + 4}" y2="${plotBottomY}" stroke="#dbe3f0"/>
+          <line x1="${plotLeftX}" y1="${plotTopY}" x2="${plotLeftX}" y2="${plotBottomY}" stroke="#dbe3f0"/>
+          <line x1="${plotRightX}" y1="${plotTopY}" x2="${plotRightX}" y2="${plotBottomY}" stroke="#dbe3f0"/>
+          <line x1="${plotLeftX - 4}" y1="${perfBaseY}" x2="${plotRightX + 4}" y2="${perfBaseY}" stroke="#efe4cc" stroke-dasharray="4 3"/>
+
+          <polyline points="${aumPointList}" fill="none" stroke="#165fbc" stroke-width="2.8"/>
+          <polyline points="${perfPointList}" fill="none" stroke="#c97700" stroke-width="2.2"/>
+
+          ${yearLabelHtml}
+
+          <rect x="${plotRightX - 210}" y="10" width="10" height="10" fill="#165fbc"/>
+          <text x="${plotRightX - 196}" y="19" font-size="10" fill="#5f677f">AUM</text>
+          <rect x="${plotRightX - 210}" y="26" width="10" height="10" fill="#c97700"/>
+          <text x="${plotRightX - 196}" y="35" font-size="10" fill="#5f677f">Cumulative perf index</text>
+
+          ${leftAxisLabelHtml}
+          <text x="${plotLeftX}" y="16" font-size="10" fill="#687288">AUM max ${formatCompact(maxAum)}</text>
+          <text x="${plotRightX + 6}" y="${plotTopY + 3}" font-size="10" fill="#a46000">${rightAxisTopLabel}</text>
+          <text x="${plotRightX + 6}" y="${plotBottomY}" font-size="10" fill="#a46000">${rightAxisBottomLabel}</text>
+          <text x="${plotRightX + 6}" y="${perfBaseY + 3}" font-size="10" fill="#a46000">100</text>
+        `
+      });
+    };
+
+    const renderNetResultChart = (rowList) => {
+      const hostNode = document.getElementById("revenueChart");
+      const { widthValue, heightValue } = getChartSize(hostNode);
+
+      const metricConfigMap = {
+        netIncome: {
+          titleText: "Annual net income (Dominice / Astra with memory)",
+          dominiceFieldId: "dominiceNet",
+          astraFieldId: "astraNet",
+          dominiceLegendText: "Dominice net",
+          astraLegendText: "Astra net"
+        },
+        revenue: {
+          titleText: "Annual revenue (Dominice / Astra)",
+          dominiceFieldId: "dominiceRevenue",
+          astraFieldId: "astraRevenue",
+          dominiceLegendText: "Dominice revenue",
+          astraLegendText: "Astra revenue"
+        },
+        cumulativeNetIncome: {
+          titleText: "Cumulative net income (Dominice / Astra)",
+          dominiceFieldId: "cumulativeDominiceNet",
+          astraFieldId: "cumulativeAstraNet",
+          dominiceLegendText: "Dominice cumulative net",
+          astraLegendText: "Astra cumulative net"
+        },
+        seedPerf: {
+          titleText: "Annual seed investment performance",
+          dominiceFieldId: "seedPerfChf",
+          astraFieldId: null,
+          dominiceLegendText: "Seed performance",
+          astraLegendText: ""
+        },
+        cumulativeSeedPerf: {
+          titleText: "Cumulative seed investment performance",
+          dominiceFieldId: "cumulativeSeedPerfChf",
+          astraFieldId: null,
+          dominiceLegendText: "Cumulative seed performance",
+          astraLegendText: ""
+        },
+        seedPlusDominiceNet: {
+          titleText: "Annual seed performance + Dominice net",
+          dominiceFieldId: "seedPlusDominiceNetChf",
+          astraFieldId: null,
+          dominiceLegendText: "Seed perf + Dominice net",
+          astraLegendText: ""
+        },
+        cumulativeSeedPlusDominiceNet: {
+          titleText: "Cumulative seed performance + Dominice net",
+          dominiceFieldId: "cumulativeSeedPlusDominiceNetChf",
+          astraFieldId: null,
+          dominiceLegendText: "Cumulative seed perf + Dominice net",
+          astraLegendText: ""
+        }
+      };
+
+      const selectedMetricId = stateData.secondaryChartMetricId;
+      const metricConfigObj = metricConfigMap[selectedMetricId] || metricConfigMap.netIncome;
+      document.getElementById("secondaryChartTitle").textContent = metricConfigObj.titleText;
+
+      const hasAstraSeries = Boolean(metricConfigObj.astraFieldId);
+      const allValueList = rowList.flatMap((rowItem) => {
+        const valueList = [rowItem[metricConfigObj.dominiceFieldId], 0];
+        if (hasAstraSeries) {
+          valueList.push(rowItem[metricConfigObj.astraFieldId]);
+        }
+        return valueList;
+      });
+
+      const maxValue = Math.max(...allValueList, 1);
+      const minValue = Math.min(...allValueList, 0);
+      const rangeValue = Math.max(maxValue - minValue, 1);
+
+      const groupWidth = (widthValue - 70) / rowList.length;
+      const topY = 24;
+      const bottomY = heightValue - 22;
+      const drawableHeight = Math.max(bottomY - topY, 120);
+
+      const yFromValue = (valueNumber) => topY + ((maxValue - valueNumber) / rangeValue) * drawableHeight;
+      const zeroY = yFromValue(0);
+
+      const barHtml = rowList.map((rowItem, indexValue) => {
+        const xBase = 38 + indexValue * groupWidth;
+
+        const dominiceValue = rowItem[metricConfigObj.dominiceFieldId];
+        const dominiceTopY = yFromValue(Math.max(dominiceValue, 0));
+        const dominiceBottomY = yFromValue(Math.min(dominiceValue, 0));
+        const dominiceHeight = Math.max(Math.abs(dominiceBottomY - dominiceTopY), 1.5);
+        const dominiceRectY = Math.min(dominiceTopY, dominiceBottomY);
+
+        if (!hasAstraSeries) {
+          const singleWidth = Math.max(10, groupWidth * 0.62);
+          const singleX = xBase + (groupWidth - singleWidth) / 2;
+
+          return `
+            <rect x="${singleX}" y="${dominiceRectY}" width="${singleWidth}" height="${dominiceHeight}" rx="2" fill="#0b7d5d"/>
+            <text x="${xBase + groupWidth / 2}" y="${heightValue - 6}" font-size="10" fill="#687288" text-anchor="middle">${rowItem.yearLabel}</text>
+          `;
+        }
+
+        const leftWidth = Math.max(6, groupWidth * 0.33);
+        const rightWidth = Math.max(6, groupWidth * 0.33);
+
+        const astraValue = rowItem[metricConfigObj.astraFieldId];
+        const astraTopY = yFromValue(Math.max(astraValue, 0));
+        const astraBottomY = yFromValue(Math.min(astraValue, 0));
+        const astraHeight = Math.max(Math.abs(astraBottomY - astraTopY), 1.5);
+        const astraRectY = Math.min(astraTopY, astraBottomY);
+
+        return `
+          <rect x="${xBase}" y="${dominiceRectY}" width="${leftWidth}" height="${dominiceHeight}" rx="2" fill="#0b7d5d"/>
+          <rect x="${xBase + leftWidth + 5}" y="${astraRectY}" width="${rightWidth}" height="${astraHeight}" rx="2" fill="#165fbc"/>
+          <text x="${xBase + groupWidth / 2}" y="${heightValue - 6}" font-size="10" fill="#687288" text-anchor="middle">${rowItem.yearLabel}</text>
+        `;
+      }).join("");
+
+      const legendStartX = widthValue - 320;
+      const astraLegendHtml = hasAstraSeries
+        ? `<rect x="${legendStartX}" y="26" width="10" height="10" fill="#165fbc"/><text x="${legendStartX + 14}" y="35" font-size="10" fill="#5f677f">${metricConfigObj.astraLegendText}</text>`
+        : "";
+
+      hostNode.innerHTML = buildSvg({
+        widthValue,
+        heightValue,
+        contentHtml: `
+          <rect x="0" y="0" width="${widthValue}" height="${heightValue}" fill="#fcfdff"/>
+          <line x1="34" y1="${zeroY}" x2="${widthValue - 10}" y2="${zeroY}" stroke="#dbe3f0"/>
+          ${barHtml}
+          <rect x="${legendStartX}" y="10" width="10" height="10" fill="#0b7d5d"/>
+          <text x="${legendStartX + 14}" y="19" font-size="10" fill="#5f677f">${metricConfigObj.dominiceLegendText}</text>
+          ${astraLegendHtml}
+        `
+      });
+    };
+
+    const renderAssumptions = () => {
+      const assumptionsNode = document.getElementById("assumptionsBox");
+      const currentScenario = getCurrentScenario();
+      const isStochasticScenario = currentScenario.scenarioId === "stochasticCase";
+
+      if (isStochasticScenario) {
+        assumptionsNode.innerHTML = `
+          <div><strong>Performance model:</strong> annual return ~ Normal(drift, volatility).</div>
+          <div>drift = <strong>${stateData.stochasticDriftPct.toFixed(1)}%</strong>, volatility = <strong>${stateData.stochasticVolPct.toFixed(1)}%</strong>, random seed = <strong>${Math.round(stateData.stochasticSeed)}</strong>.</div>
+          <div style="margin-top:6px;"><strong>Fundraising model:</strong></div>
+          <div>fundraisingRate = base + ((performance / targetReturnToDoubleAUM) * fundraisingAtTargetReturn) + betaPerf * performance + betaAum * ln(1 + AUM/scaleAUM) + shock</div>
+          <div>targetReturnToDoubleAUM = <strong>${stateData.stochasticDoubleAumPerfPct.toFixed(1)}%</strong>, fundraisingAtTargetReturn = <strong>${stateData.stochasticDoubleAumFlowPct.toFixed(1)}%</strong>.</div><div>base = <strong>${stateData.stochasticFlowBasePct.toFixed(1)}%</strong>, betaPerf = <strong>${stateData.stochasticFlowPerfBeta.toFixed(2)}</strong>, betaAum = <strong>${stateData.stochasticFlowAumBetaPct.toFixed(1)}%</strong>, scaleAUM = <strong>${formatCurrency(stateData.stochasticFlowScaleAumChf)}</strong>.</div>
+          <div>shock volatility = <strong>${stateData.stochasticFlowVolPct.toFixed(1)}%</strong>, clamp = [<strong>${stateData.stochasticFlowMinPct.toFixed(1)}%</strong>, <strong>${stateData.stochasticFlowMaxPct.toFixed(1)}%</strong>].</div>
+        `;
+        return;
+      }
+
+      assumptionsNode.innerHTML = `
+        <div><strong>Deterministic scenario:</strong> annual performance and fundraising are fixed by the selected scenario and inputs.</div>
+        <div>performance = <strong>${stateData.performancePct.toFixed(1)}%</strong>, fundraising = <strong>${stateData.collectionPct.toFixed(1)}%</strong> (or target AUM path when configured).</div>
+        <div style="margin-top:6px;">Fees: management <strong>${stateData.managementFeePct.toFixed(2)}%</strong>, performance <strong>${stateData.performanceFeePct.toFixed(1)}%</strong>.</div>
+        <div>Operating costs split: <strong>50% Dominice / 50% Astra</strong>, with Astra negative net carried as memory.</div>
+      `;
+    };
+
+    const renderKpiPanel = (rowList) => {
+      const lastRow = rowList[rowList.length - 1];
+      document.getElementById("kpiFinalAum").textContent = formatCurrency(lastRow.aumEnd);
+      document.getElementById("kpiCumDominiceRev").textContent = formatCurrency(lastRow.cumulativeDominiceRevenue);
+
+      const domNetNode = document.getElementById("kpiCumDominiceNet");
+      domNetNode.textContent = formatCurrency(lastRow.cumulativeDominiceNet);
+      domNetNode.classList.toggle("negTone", lastRow.cumulativeDominiceNet < 0);
+
+      const roicNode = document.getElementById("kpiFinalRoic");
+      roicNode.textContent = formatPercent(lastRow.roicValue);
+      roicNode.classList.toggle("negTone", lastRow.roicValue < 0);
+    };
+
+    const renderResultTable = (rowList) => {
+      const bodyNode = document.getElementById("resultTableBody");
+      bodyNode.innerHTML = rowList.map((rowItem) => {
+        const domNetClass = rowItem.dominiceNet < 0 ? "negTone" : "";
+        const cumDomClass = rowItem.cumulativeDominiceNet < 0 ? "negTone" : "";
+        const supportClass = rowItem.dominiceSupportChf > 0 ? "negTone" : "";
+
+        return `
+          <tr>
+            <td>${rowItem.yearLabel}</td>
+            <td>${rowItem.phaseLabel}</td>
+            <td>${formatCurrency(rowItem.aumStart)}</td>
+            <td>${formatCurrency(rowItem.aumEnd)}</td>
+            <td>${formatCurrency(rowItem.totalManagementFees)}</td>
+            <td>${formatCurrency(rowItem.totalPerformanceFees)}</td>
+            <td>${formatCurrency(rowItem.dominiceRevenue)}</td>
+            <td>${formatCurrency(rowItem.astraRevenue)}</td>
+            <td>${formatCurrency(rowItem.operatingCosts)}</td>
+            <td>${formatCurrency(rowItem.dominiceCostShare)}</td>
+            <td>${formatCurrency(rowItem.astraCostShare)}</td>
+            <td class="${supportClass}">${formatCurrency(rowItem.dominiceSupportChf)}</td>
+            <td>${formatCurrency(rowItem.astraRepaymentChf)}</td>
+            <td>${formatCurrency(rowItem.astraLossMemoryChf)}</td>
+            <td class="${domNetClass}">${formatCurrency(rowItem.dominiceNet)}</td>
+            <td>${formatCurrency(rowItem.astraNet)}</td>
+            <td class="${cumDomClass}">${formatCurrency(rowItem.cumulativeDominiceNet)}</td>
+            <td>${formatCurrency(rowItem.cumulativeAstraNet)}</td>
+            <td>${formatCurrency(rowItem.seedPerfChf)}</td>
+            <td>${formatCurrency(rowItem.cumulativeSeedPerfChf)}</td>
+            <td>${formatCurrency(rowItem.seedPlusDominiceNetChf)}</td>
+            <td>${formatCurrency(rowItem.cumulativeSeedPlusDominiceNetChf)}</td>
+            <td>${formatPercent(rowItem.roicValue)}</td>
+          </tr>
+        `;
+      }).join("");
+    };
+
+    const syncInputFromState = () => {
+      inputFieldIdList.forEach((fieldId) => {
+        const inputNode = document.getElementById(fieldId);
+        if (!inputNode) return;
+        inputNode.value = stateData[fieldId];
+      });
+    };
+
+    const bindInputListeners = () => {
+      inputFieldIdList.forEach((fieldId) => {
+        const inputNode = document.getElementById(fieldId);
+        if (!inputNode) return;
+
+        inputNode.addEventListener("input", (eventObj) => {
+          const inputValue = parseNumberValue(eventObj.target.value, stateData[fieldId]);
+          stateData[fieldId] = inputValue;
+
+          if (fieldId === "projectionYears") {
+            stateData.projectionYears = Math.min(Math.max(Math.round(stateData.projectionYears), 1), 15);
+          }
+
+          redrawAll();
+        });
+      });
+    };
+
+
+    const updateStochasticInputsVisibility = () => {
+      const sectionNode = document.getElementById("stochasticInputsSection");
+      if (!sectionNode) return;
+
+      const currentScenario = getCurrentScenario();
+      const isStochasticScenario = currentScenario && currentScenario.scenarioId === "stochasticCase";
+      sectionNode.style.display = isStochasticScenario ? "grid" : "none";
+      sectionNode.style.gap = "10px";
+    };
+
+    const bindGenerateScenarioButton = () => {
+      const buttonNode = document.getElementById("generateScenarioButton");
+      if (!buttonNode) return;
+
+      buttonNode.addEventListener("click", () => {
+        stateData.stochasticSeed = Math.floor(Math.random() * 1000000000);
+        const seedInputNode = document.getElementById("stochasticSeed");
+        if (seedInputNode) {
+          seedInputNode.value = stateData.stochasticSeed;
+        }
+        redrawAll();
+      });
+    };
+
+    const bindSecondaryChartSelector = () => {
+      const selectorNode = document.getElementById("secondaryChartMetricId");
+      if (!selectorNode) return;
+
+      selectorNode.value = stateData.secondaryChartMetricId;
+      selectorNode.addEventListener("change", (eventObj) => {
+        stateData.secondaryChartMetricId = eventObj.target.value;
+        redrawAll();
+      });
+    };
+
+    const renderScenarioButtons = () => {
+      const blockNode = document.getElementById("scenarioBlock");
+      blockNode.innerHTML = scenarioList.map((scenarioItem) => `
+        <button class="scenarioButton ${scenarioItem.scenarioId === stateData.activeScenarioId ? "isActive" : ""}" dataScenarioId="${scenarioItem.scenarioId}">
+          ${scenarioItem.scenarioLabel}
+        </button>
+      `).join("");
+
+      blockNode.querySelectorAll("button").forEach((buttonNode) => {
+        buttonNode.addEventListener("click", () => {
+          const nextScenarioId = buttonNode.getAttribute("dataScenarioId");
+          const nextScenario = scenarioList.find((scenarioItem) => scenarioItem.scenarioId === nextScenarioId);
+          if (!nextScenario) return;
+
+          stateData.activeScenarioId = nextScenario.scenarioId;
+          stateData.performancePct = nextScenario.performancePct;
+          stateData.collectionPct = nextScenario.collectionPct;
+          syncInputFromState();
+          redrawAll();
+        });
+      });
+    };
+
+    const redrawAll = () => {
+      renderScenarioButtons();
+      updateStochasticInputsVisibility();
+      const rowList = computeProjectionRows();
+      renderKpiPanel(rowList);
+      renderAssumptions();
+      renderAumChart(rowList);
+      renderNetResultChart(rowList);
+      renderResultTable(rowList);
+    };
+
+    syncInputFromState();
+    bindInputListeners();
+    bindGenerateScenarioButton();
+    bindSecondaryChartSelector();
+    redrawAll();
+
+    window.addEventListener("resize", () => {
+      redrawAll();
+    });
+  </script>
+</body>
+</html>
+
+
+
