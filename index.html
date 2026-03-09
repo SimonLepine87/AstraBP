@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -385,6 +385,8 @@
               <th>Step-down phase</th>
               <th>Start AUM</th>
               <th>End AUM</th>
+              <th>Gross perf</th>
+              <th>Net perf (after MF+PF)</th>
               <th>Total MF</th>
               <th>Total PF</th>
               <th>Dominice revenue</th>
@@ -618,6 +620,7 @@
       const stochasticScaleAumChf = Math.max(stateData.stochasticFlowScaleAumChf, 1000000);
       const stochasticDoubleAumPerfRate = Math.max(stateData.stochasticDoubleAumPerfPct / 100, 0.01);
       const stochasticDoubleAumFlowRate = stateData.stochasticDoubleAumFlowPct / 100;
+      const stochasticCapacityCapAumChf = 2000000000;
 
       const randomFn = createSeededRandom(stateData.stochasticSeed);
 
@@ -652,11 +655,17 @@
           }
         }
 
-        const aumEnd = Math.max(aumStart + perfGain + collectionGain, 0);
+        let aumEnd = Math.max(aumStart + perfGain + collectionGain, 0);
+        if (isStochasticScenario && aumEnd > stochasticCapacityCapAumChf) {
+          aumEnd = stochasticCapacityCapAumChf;
+          collectionGain = aumEnd - aumStart - perfGain;
+          appliedCollectionRate = aumStart > 0 ? collectionGain / aumStart : 0;
+        }
         const stepDownObj = getStepDownByAum(aumEnd);
 
-        const totalManagementFees = aumEnd * mfRate;
-        const totalPerformanceFees = Math.max(aumEnd * appliedPerfRate, 0) * pfRate;
+        const averageAumChf = (aumStart + aumEnd) / 2;
+        const totalManagementFees = averageAumChf * mfRate;
+        const totalPerformanceFees = Math.max(averageAumChf * appliedPerfRate, 0) * pfRate;
 
         const revenueSplitObj = computeProgressiveRevenueSplit(
           aumEnd,
@@ -764,15 +773,21 @@
       const aumSeriesList = [stateData.initialAumChf, ...rowList.map((rowItem) => rowItem.aumEnd)];
       const maxAum = Math.max(...aumSeriesList, 1);
 
-      const perfIndexList = [100];
+      const grossPerfIndexList = [100];
+      const netPerfIndexList = [100];
       rowList.forEach((rowItem) => {
-        const prevIndexValue = perfIndexList[perfIndexList.length - 1];
-        const growthRate = rowItem.appliedPerfRate ?? (stateData.performancePct / 100);
-        perfIndexList.push(prevIndexValue * (1 + growthRate));
+        const prevGrossIndexValue = grossPerfIndexList[grossPerfIndexList.length - 1];
+        const prevNetIndexValue = netPerfIndexList[netPerfIndexList.length - 1];
+
+        const grossGrowthRate = rowItem.appliedPerfRate ?? (stateData.performancePct / 100);
+        const netGrowthRate = grossGrowthRate - (stateData.managementFeePct / 100) - (Math.max(grossGrowthRate, 0) * (stateData.performanceFeePct / 100));
+
+        grossPerfIndexList.push(prevGrossIndexValue * (1 + grossGrowthRate));
+        netPerfIndexList.push(prevNetIndexValue * (1 + netGrowthRate));
       });
 
-      const maxPerfIndex = Math.max(...perfIndexList, 100);
-      const minPerfIndex = Math.min(...perfIndexList, 100);
+      const maxPerfIndex = Math.max(...grossPerfIndexList, ...netPerfIndexList, 100);
+      const minPerfIndex = Math.min(...grossPerfIndexList, ...netPerfIndexList, 100);
       const perfIndexRange = Math.max(maxPerfIndex - minPerfIndex, 1);
 
       const pointCount = Math.max(rowList.length + 1, 2);
@@ -786,7 +801,12 @@
         return `${xPos},${yFromAum(aumValue)}`;
       }).join(" ");
 
-      const perfPointList = perfIndexList.map((indexValue, pointIndex) => {
+      const grossPerfPointList = grossPerfIndexList.map((indexValue, pointIndex) => {
+        const xPos = plotLeftX + pointIndex * xStep;
+        return `${xPos},${yFromPerfIndex(indexValue)}`;
+      }).join(" ");
+
+      const netPerfPointList = netPerfIndexList.map((indexValue, pointIndex) => {
         const xPos = plotLeftX + pointIndex * xStep;
         return `${xPos},${yFromPerfIndex(indexValue)}`;
       }).join(" ");
@@ -820,14 +840,17 @@
           <line x1="${plotLeftX - 4}" y1="${perfBaseY}" x2="${plotRightX + 4}" y2="${perfBaseY}" stroke="#efe4cc" stroke-dasharray="4 3"/>
 
           <polyline points="${aumPointList}" fill="none" stroke="#165fbc" stroke-width="2.8"/>
-          <polyline points="${perfPointList}" fill="none" stroke="#c97700" stroke-width="2.2"/>
+          <polyline points="${grossPerfPointList}" fill="none" stroke="#c97700" stroke-width="2.2"/>
+          <polyline points="${netPerfPointList}" fill="none" stroke="#8a3f00" stroke-width="2.0" stroke-dasharray="5 3"/>
 
           ${yearLabelHtml}
 
-          <rect x="${plotRightX - 210}" y="10" width="10" height="10" fill="#165fbc"/>
-          <text x="${plotRightX - 196}" y="19" font-size="10" fill="#5f677f">AUM</text>
-          <rect x="${plotRightX - 210}" y="26" width="10" height="10" fill="#c97700"/>
-          <text x="${plotRightX - 196}" y="35" font-size="10" fill="#5f677f">Cumulative perf index</text>
+          <rect x="${plotRightX - 238}" y="10" width="10" height="10" fill="#165fbc"/>
+          <text x="${plotRightX - 224}" y="19" font-size="10" fill="#5f677f">AUM</text>
+          <rect x="${plotRightX - 238}" y="26" width="10" height="10" fill="#c97700"/>
+          <text x="${plotRightX - 224}" y="35" font-size="10" fill="#5f677f">Gross perf index</text>
+          <rect x="${plotRightX - 238}" y="42" width="10" height="10" fill="#8a3f00"/>
+          <text x="${plotRightX - 224}" y="51" font-size="10" fill="#5f677f">Net perf index (MF+PF)</text>
 
           ${leftAxisLabelHtml}
           <text x="${plotLeftX}" y="16" font-size="10" fill="#687288">AUM max ${formatCompact(maxAum)}</text>
@@ -981,12 +1004,14 @@
       if (isStochasticScenario) {
         assumptionsNode.innerHTML = `
           <div><strong>Performance model:</strong> annual return ~ Normal(drift, volatility).</div>
+          <div>Displayed performance is gross; net performance shown in the table is gross performance minus management fee and performance fee.</div>
           <div>drift = <strong>${stateData.stochasticDriftPct.toFixed(1)}%</strong>, volatility = <strong>${stateData.stochasticVolPct.toFixed(1)}%</strong>, random seed = <strong>${Math.round(stateData.stochasticSeed)}</strong>.</div>
           <div style="margin-top:6px;"><strong>Fundraising model:</strong></div>
           <div>fundraisingRate = base + ((performance / targetReturnToDoubleAUM) * fundraisingAtTargetReturn) + betaPerf * performance + betaAum * ln(1 + AUM/scaleAUM) + shock</div>
           <div>targetReturnToDoubleAUM = <strong>${stateData.stochasticDoubleAumPerfPct.toFixed(1)}%</strong>, fundraisingAtTargetReturn = <strong>${stateData.stochasticDoubleAumFlowPct.toFixed(1)}%</strong>.</div><div>base = <strong>${stateData.stochasticFlowBasePct.toFixed(1)}%</strong>, betaPerf = <strong>${stateData.stochasticFlowPerfBeta.toFixed(2)}</strong>, betaAum = <strong>${stateData.stochasticFlowAumBetaPct.toFixed(1)}%</strong>, scaleAUM = <strong>${formatCurrency(stateData.stochasticFlowScaleAumChf)}</strong>.</div>
           <div>shock volatility = <strong>${stateData.stochasticFlowVolPct.toFixed(1)}%</strong>, clamp = [<strong>${stateData.stochasticFlowMinPct.toFixed(1)}%</strong>, <strong>${stateData.stochasticFlowMaxPct.toFixed(1)}%</strong>].</div>
           <div>Astra compensation is applied in-year against Dominice deficit memory; Astra net income equals Astra revenue minus this compensation.</div>
+                    <div>Strategy capacity cap (stochastic): <strong>2.0bn CHF AUM</strong>.</div>
           <div style="margin-top:6px;">Seed policy: <strong>capital maintained during first 3 years</strong>; project stops if cumulative performance drops below <strong>-20%</strong> during this period.</div>
         `;
         return;
@@ -994,10 +1019,12 @@
 
       assumptionsNode.innerHTML = `
         <div><strong>Deterministic scenario:</strong> annual performance and fundraising are fixed by the selected scenario and inputs.</div>
+        <div>Displayed performance is gross; net performance shown in the table is gross performance minus management fee and performance fee.</div>
         <div>performance = <strong>${stateData.performancePct.toFixed(1)}%</strong>, fundraising = <strong>${stateData.collectionPct.toFixed(1)}%</strong> (or target AUM path when configured).</div>
         <div style="margin-top:6px;">Fees: management <strong>${stateData.managementFeePct.toFixed(2)}%</strong>, performance <strong>${stateData.performanceFeePct.toFixed(1)}%</strong>.</div>
         <div>Astra compensation is applied in-year against Dominice deficit memory; Astra net income equals Astra revenue minus this compensation.</div>
-        <div style="margin-top:6px;">Seed policy: <strong>capital maintained during first 3 years</strong>; project stops if cumulative performance drops below <strong>-20%</strong> during this period.</div>
+                  <div>Strategy capacity cap (stochastic): <strong>2.0bn CHF AUM</strong>.</div>
+          <div style="margin-top:6px;">Seed policy: <strong>capital maintained during first 3 years</strong>; project stops if cumulative performance drops below <strong>-20%</strong> during this period.</div>
       `;
     };
 
@@ -1027,6 +1054,8 @@
             <td>${rowItem.phaseLabel}</td>
             <td>${formatCurrency(rowItem.aumStart)}</td>
             <td>${formatCurrency(rowItem.aumEnd)}</td>
+            <td>${formatPercent(rowItem.appliedPerfRate * 100)}</td>
+            <td>${formatPercent((rowItem.appliedPerfRate - (stateData.managementFeePct / 100) - (Math.max(rowItem.appliedPerfRate, 0) * (stateData.performanceFeePct / 100))) * 100)}</td>
             <td>${formatCurrency(rowItem.totalManagementFees)}</td>
             <td>${formatCurrency(rowItem.totalPerformanceFees)}</td>
             <td>${formatCurrency(rowItem.dominiceRevenue)}</td>
