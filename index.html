@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -226,39 +226,6 @@
         Based on the deal board paper: 50M seed, 2/20 fee structure, and Dominice/Astra step-down economics.
       </p>
 
-      <section class="cardPanel" style="margin-bottom:12px; padding:10px 12px;">
-        <h3 style="margin:0 0 8px; font-size:0.9rem; color: var(--inkMuted);">Repartition par phase</h3>
-        <table>
-          <thead>
-            <tr>
-              <th>Phase</th>
-              <th>AUM</th>
-              <th>Dominice MF</th>
-              <th>Dominice PF</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Phase 1</td>
-              <td>&lt;= 300m</td>
-              <td>100%</td>
-              <td>40%</td>
-            </tr>
-            <tr>
-              <td>Phase 2</td>
-              <td>300m - 600m</td>
-              <td>80%</td>
-              <td>30%</td>
-            </tr>
-            <tr>
-              <td>Phase 3</td>
-              <td>&gt; 600m</td>
-              <td>70%</td>
-              <td>25%</td>
-            </tr>
-          </tbody>
-        </table>
-      </section>
 
       <div class="scenarioBlock" id="scenarioBlock"></div>
 
@@ -354,6 +321,37 @@
       <section class="cardPanel tableCard" style="max-height:none;">
         <h3 style="margin:0 0 8px; font-size:0.91rem; color: var(--inkMuted);">Current assumptions</h3>
         <div id="assumptionsBox" style="font-size:0.83rem; color:#4d5771; line-height:1.45;"></div>
+        <h4 style="margin:10px 0 6px; font-size:0.84rem; color: var(--inkMuted);">Phase Allocation</h4>
+        <table>
+          <thead>
+            <tr>
+              <th>Phase</th>
+              <th>AUM</th>
+              <th>Dominice MF</th>
+              <th>Dominice PF</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Phase 1</td>
+              <td>&lt;= 300m</td>
+              <td>100%</td>
+              <td>40%</td>
+            </tr>
+            <tr>
+              <td>Phase 2</td>
+              <td>300m - 600m</td>
+              <td>80%</td>
+              <td>30%</td>
+            </tr>
+            <tr>
+              <td>Phase 3</td>
+              <td>&gt; 600m</td>
+              <td>70%</td>
+              <td>25%</td>
+            </tr>
+          </tbody>
+        </table>
       </section>
 
       <section class="chartGrid">
@@ -413,11 +411,11 @@
   <script>
     const scenarioList = [
       {
-        scenarioId: "noPerfNoCollecte",
-        scenarioLabel: "No performance / no fundraising",
-        performancePct: 0,
-        collectionPct: 0,
-        targetAumMList: []
+        scenarioId: "lowPerfLimitedFundraising",
+        scenarioLabel: "Low performance (5%) + limited fundraising (300m by Y5)",
+        performancePct: 5,
+        collectionPct: 4,
+        targetAumMList: [90, 140, 190, 245, 300]
       },
       {
         scenarioId: "perfMoyenne",
