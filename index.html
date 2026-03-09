@@ -247,10 +247,10 @@
         <label>Average performance fee (%)
           <input id="performanceFeePct" type="number" step="0.1" />
         </label>
-        <label>Coûts fonctionnement (CHF/an)
+        <label>Couts fonctionnement (CHF/an)
           <input id="operatingCostsChf" type="number" min="0" step="10000" />
         </label>
-        <label>Seed capital Dominicé (CHF)
+        <label>Seed capital Dominice (CHF)
           <input id="seedCapitalChf" type="number" min="0" step="100000" />
         </label>
         <div id="stochasticInputsSection" style="display:none;">
@@ -304,15 +304,15 @@
           <p class="kpiValue" id="kpiFinalAum"></p>
         </article>
         <article class="cardPanel kpiCard">
-          <p class="kpiLabel">Cumulative Dominice revenueé</p>
+          <p class="kpiLabel">Cumulative Dominice revenue</p>
           <p class="kpiValue" id="kpiCumDominiceRev"></p>
         </article>
         <article class="cardPanel kpiCard">
-          <p class="kpiLabel">Cumul résultat Dominicé</p>
+          <p class="kpiLabel">Cumul resultat Dominice</p>
           <p class="kpiValue" id="kpiCumDominiceNet"></p>
         </article>
         <article class="cardPanel kpiCard">
-          <p class="kpiLabel">ROIC Dominicé final</p>
+          <p class="kpiLabel">ROIC Dominice final</p>
           <p class="kpiValue" id="kpiFinalRoic"></p>
         </article>
       </section>
@@ -345,7 +345,7 @@
       </section>
 
       <section class="cardPanel tableCard">
-        <h3 style="margin:0 0 8px; font-size:0.91rem; color: var(--inkMuted);">Annual and cumulative statementé</h3>
+        <h3 style="margin:0 0 8px; font-size:0.91rem; color: var(--inkMuted);">Annual and cumulative statement</h3>
         <table>
           <thead>
             <tr>
@@ -358,11 +358,7 @@
               <th>Dominice revenue</th>
               <th>Astra revenue</th>
               <th>Total costs</th>
-              <th>Dominice costs</th>
-              <th>Astra costs</th>
-              <th>Dominice support (Astra deficit)</th>
-              <th>Repayment to Dominice</th>
-              <th>Astra memory end of year</th>
+              <th>Astra cumulated deficit</th>
               <th>Dominice net income</th>
               <th>Astra net income</th>
               <th>Cumulative Dominice net</th>
@@ -418,8 +414,8 @@
       projectionYears: 5,
       performancePct: 10,
       collectionPct: 8,
-      managementFeePct: 2,
-      performanceFeePct: 20,
+      managementFeePct: 1.5,
+      performanceFeePct: 15,
       operatingCostsChf: 1600000,
       seedCapitalChf: 50000000,
       stochasticDriftPct: 12,
@@ -503,27 +499,59 @@
       (scenarioItem) => scenarioItem.scenarioId === stateData.activeScenarioId
     ) || scenarioList[0];
 
-    const getStepDownByAum = (aumEndChf) => {
-      const aumEndMillion = aumEndChf / 1000000;
-      if (aumEndMillion <= 300) {
-        return {
-          phaseLabel: "Phase 1 (<=300m)",
-          dominiceMfShare: 1.0,
-          dominicePfShare: 0.4
-        };
-      }
-      if (aumEndMillion <= 600) {
-        return {
-          phaseLabel: "Phase 2 (300-600m)",
-          dominiceMfShare: 0.8,
-          dominicePfShare: 0.3
-        };
-      }
-      return {
+    const stepDownTierList = [
+      {
+        phaseLabel: "Phase 1 (<=300m)",
+        aumCapChf: 300000000,
+        dominiceMfShare: 1.0,
+        dominicePfShare: 0.4
+      },
+      {
+        phaseLabel: "Phase 2 (300-600m)",
+        aumCapChf: 600000000,
+        dominiceMfShare: 0.8,
+        dominicePfShare: 0.3
+      },
+      {
         phaseLabel: "Phase 3 (>600m)",
+        aumCapChf: Number.POSITIVE_INFINITY,
         dominiceMfShare: 0.7,
         dominicePfShare: 0.25
-      };
+      }
+    ];
+
+    const getStepDownByAum = (aumEndChf) => stepDownTierList.find(
+      (tierItem) => aumEndChf <= tierItem.aumCapChf
+    ) || stepDownTierList[stepDownTierList.length - 1];
+
+    const computeProgressiveRevenueSplit = (aumEndChf, totalManagementFees, totalPerformanceFees) => {
+      if (aumEndChf <= 0) {
+        return {
+          dominiceRevenue: 0,
+          astraRevenue: 0
+        };
+      }
+
+      let previousCapChf = 0;
+      let dominiceMfRevenue = 0;
+      let dominicePfRevenue = 0;
+
+      stepDownTierList.forEach((tierItem) => {
+        const tierTopChf = Math.min(aumEndChf, tierItem.aumCapChf);
+        const tierAumChf = Math.max(tierTopChf - previousCapChf, 0);
+        if (tierAumChf <= 0) {
+          return;
+        }
+
+        const tierWeight = tierAumChf / aumEndChf;
+        dominiceMfRevenue += totalManagementFees * tierWeight * tierItem.dominiceMfShare;
+        dominicePfRevenue += totalPerformanceFees * tierWeight * tierItem.dominicePfShare;
+        previousCapChf = tierTopChf;
+      });
+
+      const dominiceRevenue = dominiceMfRevenue + dominicePfRevenue;
+      const astraRevenue = (totalManagementFees + totalPerformanceFees) - dominiceRevenue;
+      return { dominiceRevenue, astraRevenue };
     };
 
     const computeProjectionRows = () => {
@@ -534,10 +562,14 @@
       let cumulativeDominiceRevenue = 0;
       let cumulativeDominiceNet = 0;
       let cumulativeAstraNet = 0;
-      let astraLossMemoryChf = 0;
+      let astraCumulatedDeficitChf = 0;
+      let dominiceDeficitMemoryChf = 0;
       let seedValueStartChf = stateData.seedCapitalChf;
       let cumulativeSeedPerfChf = 0;
       let cumulativeSeedPlusDominiceNetChf = 0;
+      let seedUnprotectedValueChf = stateData.seedCapitalChf;
+      const seedProtectionYearCount = 3;
+      const seedStopPerfThresholdRate = -0.2;
 
       const perfRateBase = stateData.performancePct / 100;
       const collectionRateBase = stateData.collectionPct / 100;
@@ -594,34 +626,40 @@
         const totalManagementFees = aumEnd * mfRate;
         const totalPerformanceFees = Math.max(aumEnd * appliedPerfRate, 0) * pfRate;
 
-        const dominiceRevenue =
-          (totalManagementFees * stepDownObj.dominiceMfShare) +
-          (totalPerformanceFees * stepDownObj.dominicePfShare);
-        const astraRevenue = (totalManagementFees + totalPerformanceFees) - dominiceRevenue;
+        const revenueSplitObj = computeProgressiveRevenueSplit(
+          aumEnd,
+          totalManagementFees,
+          totalPerformanceFees
+        );
+        const dominiceRevenue = revenueSplitObj.dominiceRevenue;
+        const astraRevenue = revenueSplitObj.astraRevenue;
 
-        const dominiceCostShare = stateData.operatingCostsChf * 0.5;
-        const astraCostShare = stateData.operatingCostsChf * 0.5;
-
-        const astraPreMemoryNet = astraRevenue - astraCostShare;
-        let dominiceSupportChf = 0;
-        let astraRepaymentChf = 0;
-        let astraNet = 0;
-
-        if (astraPreMemoryNet < 0) {
-          dominiceSupportChf = -astraPreMemoryNet;
-          astraLossMemoryChf += dominiceSupportChf;
-          astraNet = 0;
-        } else {
-          astraRepaymentChf = Math.min(astraPreMemoryNet, astraLossMemoryChf);
-          astraLossMemoryChf -= astraRepaymentChf;
-          astraNet = astraPreMemoryNet - astraRepaymentChf;
+        const dominiceCostShare = stateData.operatingCostsChf;
+        const dominiceBaseNetChf = dominiceRevenue - dominiceCostShare;
+        if (dominiceBaseNetChf < 0) {
+          dominiceDeficitMemoryChf += -dominiceBaseNetChf;
         }
 
-        const dominiceNet = (dominiceRevenue - dominiceCostShare) - dominiceSupportChf + astraRepaymentChf;
+        const astraCompensationChf = Math.min(astraRevenue, dominiceDeficitMemoryChf);
+        dominiceDeficitMemoryChf -= astraCompensationChf;
+        astraCumulatedDeficitChf = dominiceDeficitMemoryChf;
+
+        const dominiceNet = dominiceBaseNetChf + astraCompensationChf;
+        const astraNet = astraRevenue - astraCompensationChf;
 
         const seedPerfChf = seedValueStartChf * appliedPerfRate;
-        const seedValueEndChf = seedValueStartChf + seedPerfChf;
+        const seedRawValueEndChf = seedValueStartChf + seedPerfChf;
+        const seedValueEndChf = yearIndex <= seedProtectionYearCount
+          ? Math.max(seedRawValueEndChf, stateData.seedCapitalChf)
+          : seedRawValueEndChf;
         cumulativeSeedPerfChf += seedPerfChf;
+
+        const seedUnprotectedPerfChf = seedUnprotectedValueChf * appliedPerfRate;
+        seedUnprotectedValueChf += seedUnprotectedPerfChf;
+        const seedCumulativePerfRate = stateData.seedCapitalChf > 0
+          ? (seedUnprotectedValueChf / stateData.seedCapitalChf) - 1
+          : 0;
+        const projectStoppedBool = yearIndex <= seedProtectionYearCount && seedCumulativePerfRate < seedStopPerfThresholdRate;
 
         const seedPlusDominiceNetChf = seedPerfChf + dominiceNet;
         cumulativeSeedPlusDominiceNetChf += seedPlusDominiceNetChf;
@@ -633,10 +671,11 @@
         const roicValue = stateData.seedCapitalChf > 0
           ? (cumulativeDominiceNet / stateData.seedCapitalChf) * 100
           : 0;
+        const phaseBaseLabel = `Progressive (${stepDownObj.phaseLabel})`;
 
         rowList.push({
           yearLabel: `Y${yearIndex}`,
-          phaseLabel: stepDownObj.phaseLabel,
+          phaseLabel: `${phaseBaseLabel}${projectStoppedBool ? " - STOP (cum perf < -20%)" : ""}`,
           aumStart,
           aumEnd,
           appliedPerfRate,
@@ -646,11 +685,7 @@
           dominiceRevenue,
           astraRevenue,
           operatingCosts: stateData.operatingCostsChf,
-          dominiceCostShare,
-          astraCostShare,
-          dominiceSupportChf,
-          astraRepaymentChf,
-          astraLossMemoryChf,
+          astraCumulatedDeficitChf,
           dominiceNet,
           astraNet,
           cumulativeDominiceRevenue,
@@ -660,8 +695,14 @@
           cumulativeSeedPerfChf,
           seedPlusDominiceNetChf,
           cumulativeSeedPlusDominiceNetChf,
-          roicValue
+          roicValue,
+          seedCumulativePerfRate,
+          projectStoppedBool
         });
+
+        if (projectStoppedBool) {
+          break;
+        }
 
         aumStart = aumEnd;
         seedValueStartChf = seedValueEndChf;
@@ -913,6 +954,8 @@
           <div>fundraisingRate = base + ((performance / targetReturnToDoubleAUM) * fundraisingAtTargetReturn) + betaPerf * performance + betaAum * ln(1 + AUM/scaleAUM) + shock</div>
           <div>targetReturnToDoubleAUM = <strong>${stateData.stochasticDoubleAumPerfPct.toFixed(1)}%</strong>, fundraisingAtTargetReturn = <strong>${stateData.stochasticDoubleAumFlowPct.toFixed(1)}%</strong>.</div><div>base = <strong>${stateData.stochasticFlowBasePct.toFixed(1)}%</strong>, betaPerf = <strong>${stateData.stochasticFlowPerfBeta.toFixed(2)}</strong>, betaAum = <strong>${stateData.stochasticFlowAumBetaPct.toFixed(1)}%</strong>, scaleAUM = <strong>${formatCurrency(stateData.stochasticFlowScaleAumChf)}</strong>.</div>
           <div>shock volatility = <strong>${stateData.stochasticFlowVolPct.toFixed(1)}%</strong>, clamp = [<strong>${stateData.stochasticFlowMinPct.toFixed(1)}%</strong>, <strong>${stateData.stochasticFlowMaxPct.toFixed(1)}%</strong>].</div>
+          <div>Operating costs: <strong>100% Dominice / 0% Astra</strong>. Astra compensation is applied in-year against Dominice deficit memory; Astra net income equals Astra revenue minus this compensation.</div>
+          <div style="margin-top:6px;">Seed policy: <strong>capital maintained during first 3 years</strong>; project stops if cumulative performance drops below <strong>-20%</strong> during this period.</div>
         `;
         return;
       }
@@ -921,7 +964,8 @@
         <div><strong>Deterministic scenario:</strong> annual performance and fundraising are fixed by the selected scenario and inputs.</div>
         <div>performance = <strong>${stateData.performancePct.toFixed(1)}%</strong>, fundraising = <strong>${stateData.collectionPct.toFixed(1)}%</strong> (or target AUM path when configured).</div>
         <div style="margin-top:6px;">Fees: management <strong>${stateData.managementFeePct.toFixed(2)}%</strong>, performance <strong>${stateData.performanceFeePct.toFixed(1)}%</strong>.</div>
-        <div>Operating costs split: <strong>50% Dominice / 50% Astra</strong>, with Astra negative net carried as memory.</div>
+        <div>Operating costs: <strong>100% Dominice / 0% Astra</strong>. Astra compensation is applied in-year against Dominice deficit memory; Astra net income equals Astra revenue minus this compensation.</div>
+        <div style="margin-top:6px;">Seed policy: <strong>capital maintained during first 3 years</strong>; project stops if cumulative performance drops below <strong>-20%</strong> during this period.</div>
       `;
     };
 
@@ -944,7 +988,6 @@
       bodyNode.innerHTML = rowList.map((rowItem) => {
         const domNetClass = rowItem.dominiceNet < 0 ? "negTone" : "";
         const cumDomClass = rowItem.cumulativeDominiceNet < 0 ? "negTone" : "";
-        const supportClass = rowItem.dominiceSupportChf > 0 ? "negTone" : "";
 
         return `
           <tr>
@@ -957,11 +1000,7 @@
             <td>${formatCurrency(rowItem.dominiceRevenue)}</td>
             <td>${formatCurrency(rowItem.astraRevenue)}</td>
             <td>${formatCurrency(rowItem.operatingCosts)}</td>
-            <td>${formatCurrency(rowItem.dominiceCostShare)}</td>
-            <td>${formatCurrency(rowItem.astraCostShare)}</td>
-            <td class="${supportClass}">${formatCurrency(rowItem.dominiceSupportChf)}</td>
-            <td>${formatCurrency(rowItem.astraRepaymentChf)}</td>
-            <td>${formatCurrency(rowItem.astraLossMemoryChf)}</td>
+            <td>${formatCurrency(rowItem.astraCumulatedDeficitChf)}</td>
             <td class="${domNetClass}">${formatCurrency(rowItem.dominiceNet)}</td>
             <td>${formatCurrency(rowItem.astraNet)}</td>
             <td class="${cumDomClass}">${formatCurrency(rowItem.cumulativeDominiceNet)}</td>
