@@ -257,9 +257,6 @@
         <h1>Astra BP Simulator</h1>
         <img class="domLogo" src="branding/dominice-logotype-dark-blue-rgb-1200px-w-72ppi.png" alt="Dominice logo" />
       </div>
-      <p class="hintText">
-        Based on the deal board paper: 50M seed, 2/20 fee structure, and Dominice/Astra step-down economics.
-      </p>
       <p class="hintText" style="margin-top:-4px;">
         <a href="resourceOrganization.html" target="_blank" rel="noopener noreferrer" style="color:#1f4f95; font-weight:600; text-decoration:none;">Open resource organization page</a>
       </p>
@@ -883,6 +880,7 @@
         return `${xPos},${yFromPerfIndex(indexValue)}`;
       }).join(" ");
 
+
       const yearLabelList = ["Y0", ...rowList.map((rowItem) => rowItem.yearLabel)];
       const yearLabelHtml = yearLabelList.map((labelText, indexValue) => {
         const xPos = plotLeftX + indexValue * xStep;
@@ -892,6 +890,10 @@
       const rightAxisTopLabel = maxPerfIndex.toFixed(1);
       const rightAxisBottomLabel = minPerfIndex.toFixed(1);
       const perfBaseY = yFromPerfIndex(100);
+
+      const aumAreaPointList = `${aumPointList} ${plotRightX},${plotBottomY} ${plotLeftX},${plotBottomY}`;
+      const grossAreaPointList = `${grossPerfPointList} ${plotRightX},${perfBaseY} ${plotLeftX},${perfBaseY}`;
+      const netAreaPointList = `${netPerfPointList} ${plotRightX},${perfBaseY} ${plotLeftX},${perfBaseY}`;
 
       const maxAumMchf = maxAum / 1000000;
       const midAumMchf = maxAumMchf / 2;
@@ -905,15 +907,33 @@
         widthValue,
         heightValue,
         contentHtml: `
+          <defs>
+            <linearGradient id="domAumAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#1f6ec9" stop-opacity="0.35"/>
+              <stop offset="100%" stop-color="#1f6ec9" stop-opacity="0.02"/>
+            </linearGradient>
+            <linearGradient id="domGrossAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#26a67c" stop-opacity="0.26"/>
+              <stop offset="100%" stop-color="#26a67c" stop-opacity="0.02"/>
+            </linearGradient>
+            <linearGradient id="domNetAreaGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#7f5bc9" stop-opacity="0.22"/>
+              <stop offset="100%" stop-color="#7f5bc9" stop-opacity="0.02"/>
+            </linearGradient>
+          </defs>
           <rect x="0" y="0" width="${widthValue}" height="${heightValue}" fill="#fcfdff"/>
           <line x1="${plotLeftX - 4}" y1="${plotBottomY}" x2="${plotRightX + 4}" y2="${plotBottomY}" stroke="#dbe3f0"/>
           <line x1="${plotLeftX}" y1="${plotTopY}" x2="${plotLeftX}" y2="${plotBottomY}" stroke="#dbe3f0"/>
           <line x1="${plotRightX}" y1="${plotTopY}" x2="${plotRightX}" y2="${plotBottomY}" stroke="#dbe3f0"/>
           <line x1="${plotLeftX - 4}" y1="${perfBaseY}" x2="${plotRightX + 4}" y2="${perfBaseY}" stroke="#efe4cc" stroke-dasharray="4 3"/>
 
+          <polygon points="${aumAreaPointList}" fill="url(#domAumAreaGrad)"/>
+          <polygon points="${grossAreaPointList}" fill="url(#domGrossAreaGrad)"/>
+          <polygon points="${netAreaPointList}" fill="url(#domNetAreaGrad)"/>
+
           <polyline points="${aumPointList}" fill="none" stroke="#165fbc" stroke-width="2.8"/>
-          <polyline points="${grossPerfPointList}" fill="none" stroke="#c97700" stroke-width="2.2"/>
-          <polyline points="${netPerfPointList}" fill="none" stroke="#8a3f00" stroke-width="2.0" stroke-dasharray="5 3"/>
+          <polyline points="${grossPerfPointList}" fill="none" stroke="#1a8f6b" stroke-width="2.2"/>
+          <polyline points="${netPerfPointList}" fill="none" stroke="#6f49ba" stroke-width="2.0" stroke-dasharray="5 3"/>
 
           ${yearLabelHtml}
 
@@ -1028,7 +1048,7 @@
           const singleX = xBase + (groupWidth - singleWidth) / 2;
 
           return `
-            <rect x="${singleX}" y="${dominiceRectY}" width="${singleWidth}" height="${dominiceHeight}" rx="2" fill="#0b7d5d"/>
+            <rect x="${singleX}" y="${dominiceRectY}" width="${singleWidth}" height="${dominiceHeight}" rx="2" fill="url(#domBarGradDominice)"/>
             <text x="${xBase + groupWidth / 2}" y="${heightValue - 6}" font-size="10" fill="#687288" text-anchor="middle">${rowItem.yearLabel}</text>
           `;
         }
@@ -1043,25 +1063,35 @@
         const astraRectY = Math.min(astraTopY, astraBottomY);
 
         return `
-          <rect x="${xBase}" y="${dominiceRectY}" width="${leftWidth}" height="${dominiceHeight}" rx="2" fill="#0b7d5d"/>
-          <rect x="${xBase + leftWidth + 5}" y="${astraRectY}" width="${rightWidth}" height="${astraHeight}" rx="2" fill="#165fbc"/>
+          <rect x="${xBase}" y="${dominiceRectY}" width="${leftWidth}" height="${dominiceHeight}" rx="2" fill="url(#domBarGradDominice)"/>
+          <rect x="${xBase + leftWidth + 5}" y="${astraRectY}" width="${rightWidth}" height="${astraHeight}" rx="2" fill="url(#domBarGradAstra)"/>
           <text x="${xBase + groupWidth / 2}" y="${heightValue - 6}" font-size="10" fill="#687288" text-anchor="middle">${rowItem.yearLabel}</text>
         `;
       }).join("");
 
       const legendStartX = widthValue - 320;
       const astraLegendHtml = hasAstraSeries
-        ? `<rect x="${legendStartX}" y="26" width="10" height="10" fill="#165fbc"/><text x="${legendStartX + 14}" y="35" font-size="10" fill="#5f677f">${metricConfigObj.astraLegendText}</text>`
+        ? `<rect x="${legendStartX}" y="26" width="10" height="10" fill="url(#domBarGradAstra)"/><text x="${legendStartX + 14}" y="35" font-size="10" fill="#5f677f">${metricConfigObj.astraLegendText}</text>`
         : "";
 
       hostNode.innerHTML = buildSvg({
         widthValue,
         heightValue,
         contentHtml: `
+          <defs>
+            <linearGradient id="domBarGradDominice" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#36b48b"/>
+              <stop offset="100%" stop-color="#0c7f5e"/>
+            </linearGradient>
+            <linearGradient id="domBarGradAstra" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#4b8de0"/>
+              <stop offset="100%" stop-color="#165fbc"/>
+            </linearGradient>
+          </defs>
           <rect x="0" y="0" width="${widthValue}" height="${heightValue}" fill="#fcfdff"/>
           <line x1="34" y1="${zeroY}" x2="${widthValue - 10}" y2="${zeroY}" stroke="#dbe3f0"/>
           ${barHtml}
-          <rect x="${legendStartX}" y="10" width="10" height="10" fill="#0b7d5d"/>
+          <rect x="${legendStartX}" y="10" width="10" height="10" fill="url(#domBarGradDominice)"/>
           <text x="${legendStartX + 14}" y="19" font-size="10" fill="#5f677f">${metricConfigObj.dominiceLegendText}</text>
           ${astraLegendHtml}
         `
