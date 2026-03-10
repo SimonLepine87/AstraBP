@@ -230,6 +230,126 @@
         while Dominice strengthens control, distribution capacity, and operating resilience.
       </p>
     </section>
+    <section class="sectionCard">
+      <h2>Sales Activation Pipeline (WM First, Institutional Next)</h2>
+      <div class="miniCard">
+        <p>
+          Team members maintain an active client pipeline. The initial focus is Wealth Managers (WM) for faster activation,
+          followed by institutional investors as track record, reporting depth, and operational proof points mature.
+        </p>
+      </div>
+      <div class="visualBox">
+        <svg viewBox="0 0 980 280" width="100%" role="img" aria-label="Sales pipeline illustration">
+          <rect x="24" y="26" width="170" height="70" rx="12" fill="#e8f8f2" stroke="#99d8c4" />
+          <text x="42" y="54" fill="#0d6b51" font-size="13" font-weight="700">Prospects</text>
+          <text x="42" y="76" fill="#355f55" font-size="12">WM network first</text>
+
+          <rect x="214" y="26" width="170" height="70" rx="12" fill="#edf4ff" stroke="#b8ccef" />
+          <text x="232" y="54" fill="#19427e" font-size="13" font-weight="700">Active Dialogues</text>
+          <text x="232" y="76" fill="#3c557a" font-size="12">Product fit + mandate</text>
+
+          <rect x="404" y="26" width="170" height="70" rx="12" fill="#f5f7ff" stroke="#cad4ef" />
+          <text x="422" y="54" fill="#334f85" font-size="13" font-weight="700">DD / OBA</text>
+          <text x="422" y="76" fill="#4f6086" font-size="12">Operational diligence</text>
+
+          <rect x="594" y="26" width="170" height="70" rx="12" fill="#fff3e9" stroke="#e9c8a8" />
+          <text x="612" y="54" fill="#9b571e" font-size="13" font-weight="700">Soft Commits</text>
+          <text x="612" y="76" fill="#80593a" font-size="12">Indicated allocations</text>
+
+          <rect x="784" y="26" width="170" height="70" rx="12" fill="#e9f0ff" stroke="#b1c2e9" />
+          <text x="804" y="54" fill="#21477f" font-size="13" font-weight="700">Funded AUM</text>
+          <text x="804" y="76" fill="#405d84" font-size="12">Execution + onboarding</text>
+
+          <line x1="194" y1="61" x2="214" y2="61" stroke="#7e8da9" stroke-width="3" />
+          <line x1="384" y1="61" x2="404" y2="61" stroke="#7e8da9" stroke-width="3" />
+          <line x1="574" y1="61" x2="594" y2="61" stroke="#7e8da9" stroke-width="3" />
+          <line x1="764" y1="61" x2="784" y2="61" stroke="#7e8da9" stroke-width="3" />
+
+          <rect x="24" y="130" width="450" height="120" rx="12" fill="#f6fffb" stroke="#b8ddcf" />
+          <text x="44" y="156" fill="#0b654c" font-size="15" font-weight="700">Phase 1: WM Activation</text>
+          <text x="44" y="180" fill="#355f55" font-size="13">Near-term target for first flows and validation.</text>
+          <text x="44" y="202" fill="#355f55" font-size="13">Cadence: monthly conversion tracking and pipeline reviews.</text>
+          <text x="44" y="224" fill="#355f55" font-size="13">KPIs: meetings, conversion ratio, time-to-funding, AUM landed.</text>
+
+          <rect x="506" y="130" width="448" height="120" rx="12" fill="#f8fbff" stroke="#c2d2ef" />
+          <text x="526" y="156" fill="#22457b" font-size="15" font-weight="700">Phase 2: Institutional Expansion</text>
+          <text x="526" y="180" fill="#3b557e" font-size="13">Scale-up once track record and operating proof are established.</text>
+          <text x="526" y="202" fill="#3b557e" font-size="13">Focus: consultant coverage, DD readiness, reporting depth.</text>
+          <text x="526" y="224" fill="#3b557e" font-size="13">KPIs: institutional pipeline size, mandate wins, average ticket size.</text>
+        </svg>
+      </div>
+    </section>
+
+    <section class="sectionCard">
+      <h2>Target System Architecture (Buy + Build)</h2>
+      <div class="gridTwo">
+        <article class="miniCard">
+          <h3>Vendor PMS Layer (Buy)</h3>
+          <ul>
+            <li>Evaluate solutions such as Maia, Enfusion, or equivalent market platforms.</li>
+            <li>Use as core for portfolio accounting, reconciliations, workflows, and controls.</li>
+            <li>Objective: reduce implementation risk and accelerate production readiness.</li>
+          </ul>
+        </article>
+        <article class="miniCard">
+          <h3>Internal Modules (Build)</h3>
+          <ul>
+            <li>Develop proprietary components for strategy-specific risk and analytics needs.</li>
+            <li>Add custom reporting and monitoring where market tools are incomplete.</li>
+            <li>Keep ownership of differentiated IP and decision-support workflows.</li>
+          </ul>
+        </article>
+      </div>
+      <div class="visualBox">
+        <svg viewBox="0 0 980 230" width="100%" role="img" aria-label="System architecture buy and build">
+          <rect x="26" y="26" width="290" height="176" rx="12" fill="#f8fbff" stroke="#c2d2ef" />
+          <text x="46" y="54" fill="#21477f" font-size="15" font-weight="700">External Data / Brokers</text>
+          <text x="46" y="80" fill="#3f5b84" font-size="13">Market data, executions, positions, prices</text>
+
+          <rect x="344" y="26" width="290" height="176" rx="12" fill="#eef5ff" stroke="#b7caec" />
+          <text x="364" y="54" fill="#1d467f" font-size="15" font-weight="700">Vendor PMS Core</text>
+          <text x="364" y="80" fill="#3f5b84" font-size="13">Maia / Enfusion / alternative</text>
+          <text x="364" y="102" fill="#3f5b84" font-size="13">Accounting, reconciliation, controls</text>
+
+          <rect x="662" y="26" width="290" height="176" rx="12" fill="#f6fffb" stroke="#b8ddcf" />
+          <text x="682" y="54" fill="#0a654c" font-size="15" font-weight="700">Internal Extensions</text>
+          <text x="682" y="80" fill="#355f55" font-size="13">Custom risk analytics and dashboards</text>
+          <text x="682" y="102" fill="#355f55" font-size="13">Strategy-specific controls and reporting</text>
+
+          <line x1="316" y1="114" x2="344" y2="114" stroke="#7e8da9" stroke-width="3" />
+          <polygon points="344,114 334,108 334,120" fill="#7e8da9" />
+
+          <line x1="634" y1="114" x2="662" y2="114" stroke="#7e8da9" stroke-width="3" />
+          <polygon points="662,114 652,108 652,120" fill="#7e8da9" />
+        </svg>
+      </div>
+    </section>
+
+    <section class="sectionCard">
+      <h2>Board Decision Pack: What to Approve Now</h2>
+      <div class="gridTwo">
+        <article class="miniCard">
+          <h3>Immediate Board Asks</h3>
+          <ul>
+            <li>Approve WM-first sales activation and institutional ramp sequence.</li>
+            <li>Approve buy+build systems strategy and implementation budget envelope.</li>
+            <li>Approve operating KPIs and governance cadence for quarterly board review.</li>
+          </ul>
+        </article>
+        <article class="miniCard">
+          <h3>Board Monitoring Pack</h3>
+          <ul>
+            <li>Commercial: pipeline volume, conversion, funded AUM by segment.</li>
+            <li>Investment: performance quality, risk metrics, drawdown controls.</li>
+            <li>Operations: incidents, reconciliations, reporting timeliness, system stability.</li>
+          </ul>
+        </article>
+      </div>
+      <p class="footText">
+        Positioning the proposal around concrete pipeline KPIs, phased system delivery, and formal governance milestones
+        materially increases board confidence in execution realism and scalability.
+      </p>
+    </section>
   </main>
 </body>
 </html>
