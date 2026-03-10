@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Resource Organization</title>
   <style>
+    @font-face {
+      font-family: "Altform";
+      src: url("branding/DOM_GRADIENT/Font - Altform/Altform-Regular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: "Altform";
+      src: url("branding/DOM_GRADIENT/Font - Altform/Altform-Bold.otf") format("opentype");
+      font-weight: 700;
+      font-style: normal;
+    }
+
     :root {
       --inkMain: #162238;
       --inkSoft: #44516c;
@@ -13,18 +27,29 @@
       --lineSoft: #d8deeb;
       --accentCore: #0b7d5d;
       --accentDeep: #0e4a92;
+      --domGradientBlue: url("branding/DOM_GRADIENT/DOM-GRADIENT-ELECTRIC_BLUE.jpg");
+      --domGradientAqua: url("branding/DOM_GRADIENT/DOM-GRADIENT-AQUA_GREEN.jpg");
+      --domGradientLavender: url("branding/DOM_GRADIENT/DOM-GRADIENT-LAVENDER.jpg");
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: "Avenir Next", "Trebuchet MS", "Gill Sans", sans-serif;
+      font-family: "Altform", "Trebuchet MS", "Gill Sans", sans-serif;
       color: var(--inkMain);
-      background:
-        radial-gradient(1100px 700px at 92% -8%, #d9e9ff 0%, rgba(217, 233, 255, 0) 60%),
-        radial-gradient(800px 500px at -12% 105%, #d8f5eb 0%, rgba(216, 245, 235, 0) 58%),
-        var(--surfaceMain);
+      background-image:
+        linear-gradient(rgba(246, 248, 252, 0.9), rgba(246, 248, 252, 0.9)),
+        var(--domGradientBlue),
+        var(--domGradientLavender);
+      background-size: cover, cover, 1200px auto;
+      background-position: center, center, top right;
+      background-repeat: no-repeat;
+      background-color: var(--surfaceMain);
+
+
+
+
     }
 
     .pageWrap {
@@ -54,6 +79,19 @@
       font-size: clamp(1.6rem, 3vw, 2.2rem);
       line-height: 1.1;
       letter-spacing: 0.01em;
+    }
+
+    .titleRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .domLogo {
+      height: 30px;
+      width: auto;
+      object-fit: contain;
     }
 
     .heroText {
@@ -113,7 +151,11 @@
       border: 1px dashed var(--lineSoft);
       border-radius: 12px;
       padding: 10px;
-      background: linear-gradient(180deg, #fcfdff, #f7f9ff);
+      background-image:
+        linear-gradient(rgba(252, 253, 255, 0.88), rgba(247, 249, 255, 0.88)),
+        var(--domGradientAqua);
+      background-size: cover;
+      background-position: center;
     }
 
     .footText {
@@ -131,7 +173,10 @@
 <body>
   <main class="pageWrap">
     <section class="heroCard">
-      <h1>Resource Organization and Operating Model</h1>
+      <div class="titleRow">
+        <h1>Resource Organization and Operating Model</h1>
+        <img class="domLogo" src="branding/dominice-logotype-dark-blue-rgb-1200px-w-72ppi.png" alt="Dominice logo" />
+      </div>
       <p class="heroText">
         The core team is designed as a lean investment and operations unit: two Portfolio Managers, one COO,
         and one Quantitative Analyst. The team is primarily focused on portfolio management, day-to-day operations,

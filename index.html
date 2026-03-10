@@ -5,6 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Astra BP - Simulateur Deal</title>
   <style>
+    @font-face {
+      font-family: "Altform";
+      src: url("branding/DOM_GRADIENT/Font - Altform/Altform-Regular.otf") format("opentype");
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    @font-face {
+      font-family: "Altform";
+      src: url("branding/DOM_GRADIENT/Font - Altform/Altform-Bold.otf") format("opentype");
+      font-weight: 700;
+      font-style: normal;
+    }
+
     :root {
       --bgA: #f3f7ff;
       --bgB: #f8f3ea;
@@ -21,7 +35,7 @@
 
     body {
       margin: 0;
-      font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+      font-family: "Altform", "Trebuchet MS", sans-serif;
       color: var(--inkMain);
       background: linear-gradient(145deg, var(--bgA), var(--bgB));
       min-height: 100vh;
@@ -57,6 +71,20 @@
       letter-spacing: 0.2px;
     }
 
+    .titleRow {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 2px;
+    }
+
+    .domLogo {
+      height: 24px;
+      width: auto;
+      object-fit: contain;
+    }
+
     .hintText {
       margin: 6px 0 14px;
       font-size: 0.9rem;
@@ -72,7 +100,9 @@
 
     .scenarioButton {
       border: 1px solid var(--lineSoft);
-      background: #f7f9ff;
+      background-image: linear-gradient(rgba(250,252,255,0.9), rgba(250,252,255,0.86)), url("branding/DOM_GRADIENT/DOM-GRADIENT-ELECTRIC_BLUE.jpg");
+      background-size: cover;
+      background-position: center;
       color: var(--inkMain);
       border-radius: 9px;
       padding: 9px 10px;
@@ -202,7 +232,9 @@
       position: sticky;
       top: 0;
       z-index: 1;
-      background: #f7f9ff;
+      background-image: linear-gradient(rgba(250,252,255,0.9), rgba(250,252,255,0.86)), url("branding/DOM_GRADIENT/DOM-GRADIENT-ELECTRIC_BLUE.jpg");
+      background-size: cover;
+      background-position: center;
     }
 
     th:first-child, td:first-child { text-align: left; }
@@ -221,7 +253,10 @@
 <body>
   <div class="layoutRoot">
     <aside class="cardPanel leftPanel">
-      <h1>Astra BP Simulator</h1>
+      <div class="titleRow">
+        <h1>Astra BP Simulator</h1>
+        <img class="domLogo" src="branding/dominice-logotype-dark-blue-rgb-1200px-w-72ppi.png" alt="Dominice logo" />
+      </div>
       <p class="hintText">
         Based on the deal board paper: 50M seed, 2/20 fee structure, and Dominice/Astra step-down economics.
       </p>
@@ -465,7 +500,7 @@
       performanceFeePct: 15,
       operatingCostsChf: 1600000,
       seedCapitalChf: 50000000,
-      stochasticDriftPct: 12,
+      stochasticDriftPct: 15,
       stochasticVolPct: 10,
       stochasticSeed: 42,
       stochasticFlowBasePct: 4,
