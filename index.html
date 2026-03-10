@@ -329,6 +329,8 @@
               <th>AUM</th>
               <th>Dominice MF</th>
               <th>Dominice PF</th>
+              <th>Dominice costs</th>
+              <th>Astra costs</th>
             </tr>
           </thead>
           <tbody>
@@ -337,18 +339,24 @@
               <td>&lt;= 300m</td>
               <td>100%</td>
               <td>40%</td>
+              <td>100%</td>
+              <td>0%</td>
             </tr>
             <tr>
               <td>Phase 2</td>
               <td>300m - 600m</td>
               <td>80%</td>
               <td>30%</td>
+              <td>50%</td>
+              <td>50%</td>
             </tr>
             <tr>
               <td>Phase 3</td>
               <td>&gt; 600m</td>
               <td>70%</td>
               <td>25%</td>
+              <td>0%</td>
+              <td>100%</td>
             </tr>
           </tbody>
         </table>
@@ -392,6 +400,8 @@
               <th>Dominice revenue</th>
               <th>Astra revenue</th>
               <th>Total costs</th>
+              <th>Dominice costs</th>
+              <th>Astra costs</th>
               <th>Astra cumulated deficit</th>
               <th>Dominice net income</th>
               <th>Astra net income</th>
@@ -538,19 +548,22 @@
         phaseLabel: "Phase 1 (<=300m)",
         aumCapChf: 300000000,
         dominiceMfShare: 1.0,
-        dominicePfShare: 0.4
+        dominicePfShare: 0.4,
+        dominiceCostShareRatio: 1.0
       },
       {
         phaseLabel: "Phase 2 (300-600m)",
         aumCapChf: 600000000,
         dominiceMfShare: 0.8,
-        dominicePfShare: 0.3
+        dominicePfShare: 0.3,
+        dominiceCostShareRatio: 0.5
       },
       {
         phaseLabel: "Phase 3 (>600m)",
         aumCapChf: Number.POSITIVE_INFINITY,
         dominiceMfShare: 0.7,
-        dominicePfShare: 0.25
+        dominicePfShare: 0.25,
+        dominiceCostShareRatio: 0.0
       }
     ];
 
@@ -623,6 +636,9 @@
       const stochasticCapacityCapAumChf = 2000000000;
 
       const randomFn = createSeededRandom(stateData.stochasticSeed);
+      let perfFeeHighWatermarkChf = Math.max(stateData.initialAumChf, 0);
+      let netPerfInvestorNavChf = 1;
+      let netPerfInvestorHighWatermarkChf = 1;
 
       for (let yearIndex = 1; yearIndex <= stateData.projectionYears; yearIndex += 1) {
         let appliedPerfRate = perfRateBase;
@@ -665,7 +681,19 @@
 
         const averageAumChf = (aumStart + aumEnd) / 2;
         const totalManagementFees = averageAumChf * mfRate;
-        const totalPerformanceFees = Math.max(averageAumChf * appliedPerfRate, 0) * pfRate;
+        const perfFeeBaseAumEndChf = Math.max(aumStart + perfGain, 0);
+        const eligiblePerfFeeBaseGainChf = Math.max(perfFeeBaseAumEndChf - perfFeeHighWatermarkChf, 0);
+        const totalPerformanceFees = eligiblePerfFeeBaseGainChf * pfRate;
+        perfFeeHighWatermarkChf = Math.max(perfFeeHighWatermarkChf, perfFeeBaseAumEndChf);
+        const investorStartNavChf = netPerfInvestorNavChf;
+        const investorGrossNavChf = investorStartNavChf * (1 + appliedPerfRate);
+        const investorManagementFeesChf = investorStartNavChf * mfRate;
+        const investorEligibleGainChf = Math.max(investorGrossNavChf - netPerfInvestorHighWatermarkChf, 0);
+        const investorPerformanceFeesChf = investorEligibleGainChf * pfRate;
+        const investorNetNavChf = Math.max(investorGrossNavChf - investorManagementFeesChf - investorPerformanceFeesChf, 0);
+        const netPerfRate = investorStartNavChf > 0 ? (investorNetNavChf / investorStartNavChf) - 1 : 0;
+        netPerfInvestorNavChf = investorNetNavChf;
+        netPerfInvestorHighWatermarkChf = Math.max(netPerfInvestorHighWatermarkChf, investorNetNavChf);
 
         const revenueSplitObj = computeProgressiveRevenueSplit(
           aumEnd,
@@ -675,18 +703,19 @@
         const dominiceRevenue = revenueSplitObj.dominiceRevenue;
         const astraRevenue = revenueSplitObj.astraRevenue;
 
-        const dominiceCostShare = stateData.operatingCostsChf;
+        const dominiceCostShare = stateData.operatingCostsChf * stepDownObj.dominiceCostShareRatio;
+        const astraCostShare = stateData.operatingCostsChf - dominiceCostShare;
         const dominiceBaseNetChf = dominiceRevenue - dominiceCostShare;
         if (dominiceBaseNetChf < 0) {
           dominiceDeficitMemoryChf += -dominiceBaseNetChf;
         }
 
-        const astraCompensationChf = Math.min(astraRevenue, dominiceDeficitMemoryChf);
+        const astraCompensationChf = Math.min(Math.max(astraRevenue - astraCostShare, 0), dominiceDeficitMemoryChf);
         dominiceDeficitMemoryChf -= astraCompensationChf;
         astraCumulatedDeficitChf = dominiceDeficitMemoryChf;
 
         const dominiceNet = dominiceBaseNetChf + astraCompensationChf;
-        const astraNet = astraRevenue - astraCompensationChf;
+        const astraNet = (astraRevenue - astraCostShare) - astraCompensationChf;
 
         const seedPerfChf = seedValueStartChf * appliedPerfRate;
         const seedRawValueEndChf = seedValueStartChf + seedPerfChf;
@@ -721,11 +750,14 @@
           aumEnd,
           appliedPerfRate,
           appliedCollectionRate,
+          netPerfRate,
           totalManagementFees,
           totalPerformanceFees,
           dominiceRevenue,
           astraRevenue,
           operatingCosts: stateData.operatingCostsChf,
+          dominiceCostShare,
+          astraCostShare,
           astraCumulatedDeficitChf,
           dominiceNet,
           astraNet,
@@ -1005,13 +1037,15 @@
         assumptionsNode.innerHTML = `
           <div><strong>Performance model:</strong> annual return ~ Normal(drift, volatility).</div>
           <div>Displayed performance is gross; net performance shown in the table is gross performance minus management fee and performance fee.</div>
+          <div>Performance fee uses a high-water-mark mechanism; displayed net performance is computed for an investor invested for the full year (MF% + PF% above HWM).</div>
           <div>drift = <strong>${stateData.stochasticDriftPct.toFixed(1)}%</strong>, volatility = <strong>${stateData.stochasticVolPct.toFixed(1)}%</strong>, random seed = <strong>${Math.round(stateData.stochasticSeed)}</strong>.</div>
           <div style="margin-top:6px;"><strong>Fundraising model:</strong></div>
           <div>fundraisingRate = base + ((performance / targetReturnToDoubleAUM) * fundraisingAtTargetReturn) + betaPerf * performance + betaAum * ln(1 + AUM/scaleAUM) + shock</div>
           <div>targetReturnToDoubleAUM = <strong>${stateData.stochasticDoubleAumPerfPct.toFixed(1)}%</strong>, fundraisingAtTargetReturn = <strong>${stateData.stochasticDoubleAumFlowPct.toFixed(1)}%</strong>.</div><div>base = <strong>${stateData.stochasticFlowBasePct.toFixed(1)}%</strong>, betaPerf = <strong>${stateData.stochasticFlowPerfBeta.toFixed(2)}</strong>, betaAum = <strong>${stateData.stochasticFlowAumBetaPct.toFixed(1)}%</strong>, scaleAUM = <strong>${formatCurrency(stateData.stochasticFlowScaleAumChf)}</strong>.</div>
           <div>shock volatility = <strong>${stateData.stochasticFlowVolPct.toFixed(1)}%</strong>, clamp = [<strong>${stateData.stochasticFlowMinPct.toFixed(1)}%</strong>, <strong>${stateData.stochasticFlowMaxPct.toFixed(1)}%</strong>].</div>
-          <div>Astra compensation is applied in-year against Dominice deficit memory; Astra net income equals Astra revenue minus this compensation.</div>
-                    <div>Strategy capacity cap (stochastic): <strong>2.0bn CHF AUM</strong>.</div>
+          <div>Operating costs by phase: P1 100% Dominice / 0% Astra, P2 50% / 50%, P3 0% / 100%.</div>
+          <div>Astra compensation is applied in-year against Dominice deficit memory; Astra net income equals Astra revenue minus Astra costs and minus this compensation.</div>
+          <div>Strategy capacity cap (stochastic): <strong>2.0bn CHF AUM</strong>.</div>
           <div style="margin-top:6px;">Seed policy: <strong>capital maintained during first 3 years</strong>; project stops if cumulative performance drops below <strong>-20%</strong> during this period.</div>
         `;
         return;
@@ -1020,11 +1054,12 @@
       assumptionsNode.innerHTML = `
         <div><strong>Deterministic scenario:</strong> annual performance and fundraising are fixed by the selected scenario and inputs.</div>
         <div>Displayed performance is gross; net performance shown in the table is gross performance minus management fee and performance fee.</div>
+          <div>Performance fee uses a high-water-mark mechanism; displayed net performance is computed for an investor invested for the full year (MF% + PF% above HWM).</div>
         <div>performance = <strong>${stateData.performancePct.toFixed(1)}%</strong>, fundraising = <strong>${stateData.collectionPct.toFixed(1)}%</strong> (or target AUM path when configured).</div>
         <div style="margin-top:6px;">Fees: management <strong>${stateData.managementFeePct.toFixed(2)}%</strong>, performance <strong>${stateData.performanceFeePct.toFixed(1)}%</strong>.</div>
-        <div>Astra compensation is applied in-year against Dominice deficit memory; Astra net income equals Astra revenue minus this compensation.</div>
-                  <div>Strategy capacity cap (stochastic): <strong>2.0bn CHF AUM</strong>.</div>
-          <div style="margin-top:6px;">Seed policy: <strong>capital maintained during first 3 years</strong>; project stops if cumulative performance drops below <strong>-20%</strong> during this period.</div>
+        <div>Operating costs by phase: P1 100% Dominice / 0% Astra, P2 50% / 50%, P3 0% / 100%.</div>
+        <div>Astra compensation is applied in-year against Dominice deficit memory; Astra net income equals Astra revenue minus Astra costs and minus this compensation.</div>
+        <div style="margin-top:6px;">Seed policy: <strong>capital maintained during first 3 years</strong>; project stops if cumulative performance drops below <strong>-20%</strong> during this period.</div>
       `;
     };
 
@@ -1055,12 +1090,14 @@
             <td>${formatCurrency(rowItem.aumStart)}</td>
             <td>${formatCurrency(rowItem.aumEnd)}</td>
             <td>${formatPercent(rowItem.appliedPerfRate * 100)}</td>
-            <td>${formatPercent((rowItem.appliedPerfRate - (stateData.managementFeePct / 100) - (Math.max(rowItem.appliedPerfRate, 0) * (stateData.performanceFeePct / 100))) * 100)}</td>
+            <td>${formatPercent(rowItem.netPerfRate * 100)}</td>
             <td>${formatCurrency(rowItem.totalManagementFees)}</td>
             <td>${formatCurrency(rowItem.totalPerformanceFees)}</td>
             <td>${formatCurrency(rowItem.dominiceRevenue)}</td>
             <td>${formatCurrency(rowItem.astraRevenue)}</td>
             <td>${formatCurrency(rowItem.operatingCosts)}</td>
+            <td>${formatCurrency(rowItem.dominiceCostShare)}</td>
+            <td>${formatCurrency(rowItem.astraCostShare)}</td>
             <td>${formatCurrency(rowItem.astraCumulatedDeficitChf)}</td>
             <td class="${domNetClass}">${formatCurrency(rowItem.dominiceNet)}</td>
             <td>${formatCurrency(rowItem.astraNet)}</td>
