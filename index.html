@@ -680,10 +680,12 @@
         const stepDownObj = getStepDownByAum(aumEnd);
 
         const averageAumChf = (aumStart + aumEnd) / 2;
-        const totalManagementFees = averageAumChf * mfRate;
+        const feeBaseAumChf = isStochasticScenario ? aumStart : averageAumChf;
+        const totalManagementFees = feeBaseAumChf * mfRate;
         const perfFeeBaseAumEndChf = Math.max(aumStart + perfGain, 0);
         const eligiblePerfFeeBaseGainChf = Math.max(perfFeeBaseAumEndChf - perfFeeHighWatermarkChf, 0);
-        const totalPerformanceFees = eligiblePerfFeeBaseGainChf * pfRate;
+        const simplePerformanceFeesOnStartAumChf = Math.max(aumStart * appliedPerfRate, 0) * pfRate;
+        const totalPerformanceFees = isStochasticScenario ? simplePerformanceFeesOnStartAumChf : (eligiblePerfFeeBaseGainChf * pfRate);
         perfFeeHighWatermarkChf = Math.max(perfFeeHighWatermarkChf, perfFeeBaseAumEndChf);
         const investorStartNavChf = netPerfInvestorNavChf;
         const investorGrossNavChf = investorStartNavChf * (1 + appliedPerfRate);
@@ -1038,6 +1040,7 @@
           <div><strong>Performance model:</strong> annual return ~ Normal(drift, volatility).</div>
           <div>Displayed performance is gross; net performance shown in the table is gross performance minus management fee and performance fee.</div>
           <div>Performance fee uses a high-water-mark mechanism; displayed net performance is computed for an investor invested for the full year (MF% + PF% above HWM).</div>
+          <div>Stochastic simplification: management fees and performance fees are computed on Start AUM.</div>
           <div>drift = <strong>${stateData.stochasticDriftPct.toFixed(1)}%</strong>, volatility = <strong>${stateData.stochasticVolPct.toFixed(1)}%</strong>, random seed = <strong>${Math.round(stateData.stochasticSeed)}</strong>.</div>
           <div style="margin-top:6px;"><strong>Fundraising model:</strong></div>
           <div>fundraisingRate = base + ((performance / targetReturnToDoubleAUM) * fundraisingAtTargetReturn) + betaPerf * performance + betaAum * ln(1 + AUM/scaleAUM) + shock</div>
