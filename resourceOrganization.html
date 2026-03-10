@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Resource Organization</title>
+  <style>
+    :root {
+      --inkMain: #162238;
+      --inkSoft: #44516c;
+      --surfaceMain: #f6f8fc;
+      --surfaceCard: #ffffff;
+      --lineSoft: #d8deeb;
+      --accentCore: #0b7d5d;
+      --accentDeep: #0e4a92;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Avenir Next", "Trebuchet MS", "Gill Sans", sans-serif;
+      color: var(--inkMain);
+      background:
+        radial-gradient(1100px 700px at 92% -8%, #d9e9ff 0%, rgba(217, 233, 255, 0) 60%),
+        radial-gradient(800px 500px at -12% 105%, #d8f5eb 0%, rgba(216, 245, 235, 0) 58%),
+        var(--surfaceMain);
+    }
+
+    .pageWrap {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 30px 20px 44px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .heroCard,
+    .sectionCard {
+      background: var(--surfaceCard);
+      border: 1px solid var(--lineSoft);
+      border-radius: 14px;
+      box-shadow: 0 14px 30px rgba(15, 35, 73, 0.06);
+    }
+
+    .heroCard {
+      padding: 22px;
+      display: grid;
+      gap: 10px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      line-height: 1.1;
+      letter-spacing: 0.01em;
+    }
+
+    .heroText {
+      margin: 0;
+      color: var(--inkSoft);
+      font-size: 1.02rem;
+      max-width: 78ch;
+    }
+
+    .sectionCard {
+      padding: 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 1.06rem;
+      letter-spacing: 0.01em;
+    }
+
+    .gridTwo {
+      display: grid;
+      gap: 14px;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .miniCard {
+      background: #fbfcff;
+      border: 1px solid var(--lineSoft);
+      border-radius: 12px;
+      padding: 12px;
+    }
+
+    .miniCard h3 {
+      margin: 0 0 8px;
+      font-size: 0.94rem;
+      color: var(--inkMain);
+    }
+
+    .miniCard p,
+    .miniCard li {
+      margin: 0;
+      color: var(--inkSoft);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    .miniCard ul {
+      margin: 0;
+      padding-left: 18px;
+      display: grid;
+      gap: 6px;
+    }
+
+    .visualBox {
+      border: 1px dashed var(--lineSoft);
+      border-radius: 12px;
+      padding: 10px;
+      background: linear-gradient(180deg, #fcfdff, #f7f9ff);
+    }
+
+    .footText {
+      margin: 0;
+      color: #4e5b75;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 900px) {
+      .gridTwo { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="pageWrap">
+    <section class="heroCard">
+      <h1>Resource Organization and Operating Model</h1>
+      <p class="heroText">
+        The core team is designed as a lean investment and operations unit: two Portfolio Managers, one COO,
+        and one Quantitative Analyst. The team is primarily focused on portfolio management, day-to-day operations,
+        and risk production, while Dominice provides independent risk oversight, fund distribution support,
+        and operating infrastructure.
+      </p>
+      <p class="heroText" style="margin-top:2px;">
+        <a href="index.html" target="_blank" rel="noopener noreferrer" style="color:#1f4f95; font-weight:700; text-decoration:none;">Back to BP Simulator</a>
+      </p>
+    </section>
+
+    <section class="sectionCard">
+      <h2>Team Composition and Core Ownership</h2>
+      <div class="gridTwo">
+        <article class="miniCard">
+          <h3>Internal Team (Astra)</h3>
+          <ul>
+            <li><strong>2 Portfolio Managers:</strong> portfolio construction, implementation, and monitoring.</li>
+            <li><strong>1 COO:</strong> trade lifecycle coordination, controls, and operating cadence.</li>
+            <li><strong>1 Quantitative Analyst:</strong> analytics, model support, and risk production pipeline.</li>
+          </ul>
+        </article>
+
+        <article class="miniCard">
+          <h3>Dominice Support Scope</h3>
+          <ul>
+            <li><strong>Risk oversight:</strong> second-line challenge and governance review.</li>
+            <li><strong>Fund sales:</strong> investor outreach and commercial development.</li>
+            <li><strong>Operational support:</strong> office setup, IT environment, and support services.</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="visualBox">
+        <svg viewBox="0 0 980 240" width="100%" role="img" aria-label="Resource organization map">
+          <defs>
+            <linearGradient id="astraGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#0b7d5d" />
+              <stop offset="100%" stop-color="#0894c8" />
+            </linearGradient>
+            <linearGradient id="domGrad" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#0e4a92" />
+              <stop offset="100%" stop-color="#4d66b0" />
+            </linearGradient>
+          </defs>
+
+          <rect x="28" y="24" rx="14" ry="14" width="450" height="190" fill="url(#astraGrad)" opacity="0.94" />
+          <rect x="502" y="24" rx="14" ry="14" width="450" height="190" fill="url(#domGrad)" opacity="0.94" />
+
+          <text x="50" y="54" fill="#ffffff" font-size="18" font-weight="700">Astra Core Team</text>
+          <text x="50" y="82" fill="#eaf6ff" font-size="14">2 Portfolio Managers + 1 COO + 1 Quant Analyst</text>
+          <text x="50" y="114" fill="#ffffff" font-size="14">Primary focus:</text>
+          <text x="50" y="136" fill="#eaf6ff" font-size="13">Portfolio management</text>
+          <text x="50" y="156" fill="#eaf6ff" font-size="13">Operational execution</text>
+          <text x="50" y="176" fill="#eaf6ff" font-size="13">Risk production</text>
+
+          <text x="524" y="54" fill="#ffffff" font-size="18" font-weight="700">Dominice Platform Contribution</text>
+          <text x="524" y="84" fill="#e6eeff" font-size="14">Independent oversight + commercial and infra support</text>
+          <text x="524" y="114" fill="#ffffff" font-size="14">Key support lines:</text>
+          <text x="524" y="136" fill="#e6eeff" font-size="13">Risk oversight and governance challenge</text>
+          <text x="524" y="156" fill="#e6eeff" font-size="13">Fund sales and distribution effort</text>
+          <text x="524" y="176" fill="#e6eeff" font-size="13">Office, IT, and operating backbone</text>
+
+          <line x1="472" y1="120" x2="512" y2="120" stroke="#f2f6ff" stroke-width="5" stroke-linecap="round" />
+          <polygon points="512,120 501,113 501,127" fill="#f2f6ff" />
+        </svg>
+      </div>
+    </section>
+
+    <section class="sectionCard">
+      <h2>Operating Responsibilities Illustration</h2>
+      <div class="visualBox">
+        <svg viewBox="0 0 980 320" width="100%" role="img" aria-label="Operating responsibilities split">
+          <rect x="30" y="42" width="920" height="38" rx="10" fill="#e6ecf8" />
+          <rect x="30" y="42" width="560" height="38" rx="10" fill="#0b7d5d" />
+          <text x="44" y="66" fill="#ffffff" font-size="13" font-weight="700">Astra execution-heavy workload</text>
+          <text x="604" y="66" fill="#203255" font-size="13" font-weight="700">Dominice oversight/support workload</text>
+
+          <rect x="30" y="110" width="440" height="170" rx="12" fill="#f6fffb" stroke="#b8ddcf" />
+          <text x="50" y="138" fill="#0a5f48" font-size="16" font-weight="700">Astra day-to-day engine</text>
+          <text x="50" y="164" fill="#33596b" font-size="13">Portfolio implementation and rebalancing</text>
+          <text x="50" y="186" fill="#33596b" font-size="13">Operational processing and controls</text>
+          <text x="50" y="208" fill="#33596b" font-size="13">Risk metrics production and reporting</text>
+          <text x="50" y="230" fill="#33596b" font-size="13">Quant analytics and decision support</text>
+
+          <rect x="510" y="110" width="440" height="170" rx="12" fill="#f8fbff" stroke="#c2d2ef" />
+          <text x="530" y="138" fill="#1f3f7a" font-size="16" font-weight="700">Dominice enabling layer</text>
+          <text x="530" y="164" fill="#3b557e" font-size="13">Risk oversight and challenge function</text>
+          <text x="530" y="186" fill="#3b557e" font-size="13">Fundraising and sales coverage</text>
+          <text x="530" y="208" fill="#3b557e" font-size="13">Office, IT, and operational support</text>
+          <text x="530" y="230" fill="#3b557e" font-size="13">Platform-level business support</text>
+        </svg>
+      </div>
+      <p class="footText">
+        This setup keeps the investment team concentrated on alpha delivery and production-quality risk workflows,
+        while Dominice strengthens control, distribution capacity, and operating resilience.
+      </p>
+    </section>
+  </main>
+</body>
+</html>
